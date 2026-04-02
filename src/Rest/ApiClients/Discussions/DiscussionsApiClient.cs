@@ -1,16 +1,19 @@
-﻿using Odnoklassniki.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using Odnoklassniki.Exceptions;
+using Odnoklassniki.Interfaces;
 using Odnoklassniki.Interfaces.RestApiClients;
 using Odnoklassniki.Rest.ApiClients.Discussions.Datas;
 using Odnoklassniki.Rest.ApiClients.Discussions.Enums;
 using Odnoklassniki.Rest.ApiClients.Discussions.Responses;
 using Odnoklassniki.Rest.Extensions;
+using Odnoklassniki.Rest.RequestContexts;
 
 namespace Odnoklassniki.Rest.ApiClients.Discussions;
 
 /// <summary>
 /// Клиент для взаимодействия с API обсуждений (discussions) социальной сети «Одноклассники».
 /// </summary>
-public class DiscussionsApiClient(IOkApiClientCore okApi) : IDiscussionsApiClient
+public class DiscussionsApiClient(IOkApiClientCore okApi, ILogger<DiscussionsApiClient> logger) : IDiscussionsApiClient
 {
     private const string OkClassName = "discussions";
     private const string GetListMethodName = $"{OkClassName}.getList";
@@ -18,28 +21,24 @@ public class DiscussionsApiClient(IOkApiClientCore okApi) : IDiscussionsApiClien
 
     // === PUBLIC API (из интерфейса) ===
 
-    public Task<ICollection<DiscussionData>> GetGroupListAsync(
-        string accessToken,
-        string sessionSecretKey,
+    /// <inheritdoc />
+    public Task<ICollection<DiscussionData>> GetGroupListAsync(ExplicitTokenRequestContext context,
         int count = 100,
         CancellationToken cancellationToken = default)
     {
-        // Делегируем внутреннему методу с фиксированной категорией
-        return GetListInternalAsync(accessToken, sessionSecretKey, Category.GROUP, count, cancellationToken);
+        return GetListInternalAsync(context, Category.GROUP, count, cancellationToken);
     }
 
-    public Task<ICollection<DiscussionData>> GetUserListAsync(
-        string accessToken,
-        string sessionSecretKey,
+    /// <inheritdoc />
+    public Task<ICollection<DiscussionData>> GetUserListAsync(ExplicitTokenRequestContext context,
         int count = 100,
         CancellationToken cancellationToken = default)
     {
-        return GetListInternalAsync(accessToken, sessionSecretKey, Category.MY, count, cancellationToken);
+        return GetListInternalAsync(context, Category.MY, count, cancellationToken);
     }
 
-    public async Task<ICollection<CommentData>> GetCommentsAsync(
-        string accessToken,
-        string sessionSecretKey,
+    /// <inheritdoc />
+    public async Task<ICollection<CommentData>> GetCommentsAsync(ExplicitTokenRequestContext context,
         string discussionId,
         string discussionType,
         int count = 100,
@@ -55,7 +54,9 @@ public class DiscussionsApiClient(IOkApiClientCore okApi) : IDiscussionsApiClien
             .InsertCustomParameter("discussionId", discussionId)
             .InsertCustomParameter("mark_as_read", true)
             .InsertCustomParameter("includeRemoved", true);
-
+        
+        context.Deconstruct(out var accessToken, out var sessionSecretKey);
+        
         var response = await okApi.CallAsync<CommentResponse>(
             GetCommentsMethodName, accessToken, sessionSecretKey, parameters, cancellationToken: cancellationToken);
 
@@ -81,12 +82,13 @@ public class DiscussionsApiClient(IOkApiClientCore okApi) : IDiscussionsApiClien
     /// Не выносится в интерфейс — используется только внутри класса.
     /// </summary>
     private async Task<ICollection<DiscussionData>> GetListInternalAsync(
-        string accessToken,
-        string sessionSecretKey,
+        ExplicitTokenRequestContext context,
         Category category,
         int count,
         CancellationToken cancellationToken)
     {
+        context.Deconstruct(out var accessToken, out var sessionSecretKey);
+        
         var parameters = new RestParameters()
             .InsertFields(
                 "discussion.OBJECT_TYPE", "discussion.OBJECT_ID", "discussion.NEW_COMMENTS_COUNT",

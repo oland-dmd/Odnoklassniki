@@ -1,4 +1,4 @@
-﻿namespace Odnoklassniki.Rest.AnchorNavigators.Anchor;
+﻿namespace Odnoklassniki.Rest.AnchorNavigators;
 
 /// <summary>
 /// Модель ответа для постраничной навигации на основе анкоров (cursor-based pagination).

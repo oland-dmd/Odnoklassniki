@@ -1,5 +1,7 @@
-﻿using Odnoklassniki.Interfaces;
+﻿using Odnoklassniki.Exceptions;
+using Odnoklassniki.Interfaces;
 using Odnoklassniki.Interfaces.RestApiClients;
+using Odnoklassniki.Rest.RequestContexts;
 
 namespace Odnoklassniki.Rest.ApiClients.Friends;
 
@@ -12,43 +14,28 @@ public class FriendsApiClient(IOkApiClientCore okApi) : IFriendsApiClient
     private const string GetMethodName = $"{OkClassName}.get";
 
     /// <inheritdoc />
-    public Task<ICollection<string>> GetUserFriendsAsync(
-        string accessToken,
-        string sessionSecretKey,
+    public async Task<ICollection<string>> GetUserFriendsAsync(
+        IRequestContext context,
         CancellationToken cancellationToken = default)
     {
-        // Пустой friendId = друзья текущего пользователя
-        return GetFriendsInternalAsync(accessToken, sessionSecretKey, string.Empty, cancellationToken);
-    }
+        var parameters = new RestParameters();
 
-    /// <inheritdoc />
-    public Task<ICollection<string>> GetFriendsOfaFriendAsync(
-        string accessToken,
-        string sessionSecretKey,
-        string friendId,
-        CancellationToken cancellationToken = default)
-    {
-        return GetFriendsInternalAsync(accessToken, sessionSecretKey, friendId, cancellationToken);
-    }
+        parameters = context switch
+        {
+            FriendRequestContext or MainAccountRequestContext or ExplicitTokenRequestContext => context.Apply(parameters),
+            _ => throw new UnexpectedRequestContext(context, nameof(FriendRequestContext),nameof(MainAccountRequestContext),nameof(ExplicitTokenRequestContext))
+        };
 
-    /// <summary>
-    /// Внутренняя реализация получения списка друзей.
-    /// Не выносится в интерфейс — инкапсулирует детали работы с параметрами.
-    /// </summary>
-    private async Task<ICollection<string>?> GetFriendsInternalAsync(
-        string accessToken,
-        string sessionSecretKey,
-        string friendId,
-        CancellationToken cancellationToken)
-    {
-        var parameters = new RestParameters()
-            .InsertFriendId(friendId);
-
-        return await okApi.CallAsync<ICollection<string>>(
+        context.Deconstruct(out var accessToken, out var sessionSecretKey);
+        
+        var result = await okApi.CallAsync<ICollection<string>>(
             GetMethodName,
             accessToken,
             sessionSecretKey,
             parameters,
             cancellationToken: cancellationToken);
+        
+        return result ?? [];
     }
+
 }

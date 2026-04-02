@@ -1,11 +1,11 @@
-﻿namespace Odnoklassniki.Rest.AnchorNavigators.Anchor;
+﻿namespace Odnoklassniki.Rest.AnchorNavigators;
 
 /// <summary>
 /// Реализует паттерн асинхронного перечисления для навигации по страницам данных через анкоры (anchor-based pagination).
 /// Предназначен для последовательной загрузки результатов из внешнего API (Odnoklassniki) без полной предзагрузки данных.
 /// </summary>
 /// <typeparam name="TResponse">Тип данных, содержащихся в поле результатов ответа.</typeparam>
-public class AnchorNavigator<TResponse>(Func<string, Task<AnchorResponse<TResponse>>> getResponse, string anchor = "")
+public class AnchorNavigator<TResponse>(Func<AnchorConfiguration, Task<AnchorResponse<TResponse>>> getResponse, AnchorConfiguration configuration)
     : IAsyncEnumerable<AnchorResponse<TResponse>>, IAsyncEnumerator<AnchorResponse<TResponse>>
 {
     /// <summary>
@@ -35,10 +35,9 @@ public class AnchorNavigator<TResponse>(Func<string, Task<AnchorResponse<TRespon
     {
         if (!Current.HasMore) return false;
         
-        Current = await getResponse(Current?.Anchor ?? string.Empty);
+        Current = await getResponse(configuration with{ Anchor = Current.Anchor });
         
         return Current.Results?.Count > 0;
-
     }
 
     /// <summary>
@@ -50,7 +49,7 @@ public class AnchorNavigator<TResponse>(Func<string, Task<AnchorResponse<TRespon
     /// </value>
     public AnchorResponse<TResponse> Current { get; private set; } = new()
     {
-        Anchor = anchor,
+        Anchor = configuration.Anchor,
         HasMore = true
     };
 

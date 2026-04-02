@@ -1,35 +1,32 @@
-﻿namespace Odnoklassniki.Interfaces.RestApiClients;
+﻿using Odnoklassniki.Rest.RequestContexts;
+
+namespace Odnoklassniki.Interfaces.RestApiClients;
 
 /// <summary>
 /// Клиент для работы с методами авторизации и управления сессиями в API Одноклассников.
+/// Предоставляет функции контроля времени жизни пользовательских сессий и управления токенами доступа.
 /// </summary>
 public interface IAuthApiClient
 {
     /// <summary>
     /// Продлевает срок действия пользовательской сессии.
     /// </summary>
-    /// <remarks>
-    /// Должен вызываться не реже чем раз в 30 минут при бездействии.
-    /// Для OAuth-сессий с правом LONG_ACCESS_TOKEN устанавливает новый срок действия — 30 дней.
-    /// Ограничение: не более 10 вызовов в месяц на пользователя.
-    /// </remarks>
-    /// <param name="accessToken">Токен доступа пользователя (OAuth-токен).</param>
-    /// <param name="sessionSecretKey">Секретный ключ приложения для подписи запроса.</param>
+    /// <param name="context">Контекст запроса, содержащий данные аутентификации и идентификатор сессии.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns>True, если сессия успешно продлена; иначе — false.</returns>
-    Task<bool> TouchAccountSessionAsync(
-        string accessToken,
-        string sessionSecretKey,
+    /// <returns>
+    /// <c>true</c>, если сессия успешно продлена; <c>false</c>, если продление невозможно 
+    /// (например, истёк максимальный срок жизни сессии или превышен лимит вызовов).
+    /// </returns>
+    /// <remarks>
+    /// Метод должен вызываться не реже чем раз в 30 минут при бездействии пользователя для предотвращения 
+    /// автоматического завершения сессии. Для OAuth-сессий с правом <c>LONG_ACCESS_TOKEN</c> устанавливает 
+    /// новый срок действия — 30 дней с момента последнего успешного вызова.
+    /// <list type="bullet">
+    /// <item><description>Ограничение частоты: не более 10 вызовов в месяц на одного пользователя.</description></item>
+    /// <item><description>При превышении лимита метод возвращает <c>false</c> без продления сессии.</description></item>
+    /// <item><description>Не используется для первоначальной аутентификации — только для поддержания активной сессии.</description></item>
+    /// </list>
+    /// </remarks>
+    Task<bool> TouchAccountSessionAsync(IRequestContext context,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Продлевает срок действия основной сессии приложения.
-    /// </summary>
-    /// <remarks>
-    /// Использует учетные данные, настроенные внутри IOkApiClientCore.
-    /// Предназначен для поддержания активности основного аккаунта приложения (Prod/Dev).
-    /// </remarks>
-    /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns>True, если сессия приложения успешно продлена; иначе — false.</returns>
-    Task<bool> TouchMainSessionAsync(CancellationToken cancellationToken = default);
 }

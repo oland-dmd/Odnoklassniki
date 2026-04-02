@@ -1,92 +1,88 @@
-﻿using Odnoklassniki.Enums;
-using Odnoklassniki.Rest.AnchorNavigators.Anchor;
+﻿using Odnoklassniki.Rest.AnchorNavigators;
 using Odnoklassniki.Rest.ApiClients.Groups.Dtos;
+using Odnoklassniki.Rest.RequestContexts;
+using Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
 namespace Odnoklassniki.Interfaces.RestApiClients;
 
 /// <summary>
 /// Клиент для работы с группами в социальной сети Одноклассники (OK.ru).
-/// Поддерживает работу как с основным аккаунтом (настроенным в IOkApiClientCore),
-/// так и с произвольными пользовательскими токенами.
+/// Предоставляет методы для получения информации о группах, проверки членства пользователей
+/// и навигации по списку групп текущего пользователя. Поддерживает работу как с основным
+/// аккаунтом (настроенным в IOkApiClientCore), так и с произвольными пользовательскими токенами
+/// через параметр <c>context</c>.
 /// </summary>
 public interface IGroupsApiClient
 {
-    #region Get Group Info
-
     /// <summary>
-    /// Получает информацию о группах по их идентификаторам (основной аккаунт).
+    /// Получает информацию о группах по их идентификаторам.
     /// </summary>
-    /// <param name="groupIds">Коллекция идентификаторов групп.</param>
+    /// <param name="groupIds">Коллекция идентификаторов групп в формате OK.ru (строковые числовые значения).</param>
+    /// <param name="context">Контекст запроса, содержащий данные аутентификации и авторизации.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns>Коллекция данных о группах или null, если ответ пуст.</returns>
-    Task<ICollection<GroupInfoDto>?> GetGroupsInfoAsync(
-        ICollection<string> groupIds,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получает информацию о группах по их идентификаторам с указанными токенами.
-    /// </summary>
-    /// <param name="groupIds">Коллекция идентификаторов групп.</param>
-    /// <param name="accessToken">Токен доступа пользователя.</param>
-    /// <param name="sessionSecretKey">Секретный ключ сессии.</param>
-    /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns>Коллекция данных о группах или null, если ответ пуст.</returns>
-    Task<ICollection<GroupInfoDto>?> GetGroupsInfoAsync(
-        ICollection<string> groupIds,
-        string accessToken,
-        string sessionSecretKey,
-        CancellationToken cancellationToken = default);
-
-    #endregion
-
-    #region Get User Groups Info
-
-    /// <summary>
-    /// Получает информацию о членстве пользователей в группе (основной аккаунт).
-    /// </summary>
+    /// <returns>
+    /// Коллекция объектов <see cref="GroupInfoDto"/> с данными о запрошенных группах,
+    /// или <c>null</c>, если ни одна группа не найдена или ответ сервера пуст.
+    /// </returns>
     /// <remarks>
-    /// Этот метод использует только основные учетные данные, настроенные в ядре клиента.
+    /// Метод выполняет пакетный запрос к внешнему API OK.ru. Группы, недоступные для текущего
+    /// пользователя (например, приватные или удалённые), исключаются из результата без ошибки.
+    /// <list type="bullet">
+    /// <item><description>Максимальное количество идентификаторов в одном запросе определяется лимитами платформы.</description></item>
+    /// <item><description>Для получения дополнительных полей группы используйте параметры расширения, если поддерживаются.</description></item>
+    /// <item><description>При ошибке аутентификации или превышении частоты запросов выбрасывается соответствующее исключение.</description></item>
+    /// </list>
     /// </remarks>
-    /// <param name="groupId">Идентификатор группы.</param>
-    /// <param name="userIds">Коллекция идентификаторов пользователей.</param>
+    Task<ICollection<GroupInfoDto>?> GetGroupsInfoAsync(
+        ICollection<string> groupIds,
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает информацию о статусе членства указанных пользователей в заданной группе.
+    /// </summary>
+    /// <param name="groupId">Идентификатор группы в формате OK.ru.</param>
+    /// <param name="userIds">Коллекция идентификаторов пользователей для проверки.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns>Коллекция данных о статусе пользователей или null.</returns>
+    /// <returns>
+    /// Коллекция объектов <see cref="GroupUserInfoDto"/> со статусом каждого пользователя,
+    /// или <c>null</c>, если данные недоступны или запрос не вернул результатов.
+    /// </returns>
+    /// <remarks>
+    /// Метод использует только основные учётные данные, настроенные в ядре клиента (не поддерживает
+    /// передачу произвольного <c>context</c>). Требует прав на чтение состава группы.
+    /// <list type="bullet">
+    /// <item><description>Пользователи, не найденные или не имеющие отношения к группе, исключаются из ответа.</description></item>
+    /// <item><description>Статус членства может включать значения: «участник», «модератор», «владелец», «не участник».</description></item>
+    /// <item><description>Для массовых проверок рекомендуется группировать запросы для соблюдения rate-limit платформы.</description></item>
+    /// </list>
+    /// </remarks>
     Task<ICollection<GroupUserInfoDto>?> GetUserGroupsInfoByIdsAsync(
-        string groupId,
+        GroupId groupId,
         ICollection<string> userIds,
         CancellationToken cancellationToken = default);
 
-    #endregion
-
-    #region Get User Groups (V2 with Pagination)
-
     /// <summary>
-    /// Получает список групп пользователя с поддержкой пагинации (основной аккаунт).
+    /// Возвращает навигатор для постраничного получения списка групп, в которых состоит текущий пользователь.
     /// </summary>
-    /// <param name="anchor">Метка пагинации.</param>
-    /// <param name="direction">Направление пагинации.</param>
-    /// <param name="count">Количество записей на странице.</param>
+    /// <param name="context">Контекст запроса, содержащий данные аутентификации и авторизации.</param>
+    /// <param name="anchorConfiguration">Настройки пагинации и якоря для навигации по коллекции.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns>Ответ с данными о группах и пагинации.</returns>
-    AnchorNavigator<UserGroupDto> GetUserGroupsAnchorNavigator(string anchor,
-        PagingDirection direction,
-        int count,
+    /// <returns>
+    /// Экземпляр <see cref="AnchorNavigator{UserGroupDto}"/> для итерации по результатам с поддержкой
+    /// курсорной пагинации.
+    /// </returns>
+    /// <remarks>
+    /// Метод возвращает только группы, доступные для чтения текущему пользователю. Порядок групп
+    /// определяется сервером OK.ru и может не соответствовать хронологии вступления.
+    /// <list type="bullet">
+    /// <item><description>По умолчанию возвращаются базовые поля: идентификатор, название, тип группы, аватар.</description></item>
+    /// <item><description>Для расширения набора полей используйте параметры конфигурации, если поддерживаются.</description></item>
+    /// <item><description>Пагинация реализуется через механизм anchor/cursor, а не через offset/limit.</description></item>
+    /// </list>
+    /// </remarks>
+    AnchorNavigator<UserGroupDto> GetUserGroupsAnchorNavigator(
+        IRequestContext context,
+        AnchorConfiguration anchorConfiguration,
         CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получает список групп пользователя с поддержкой пагинации с указанными токенами.
-    /// </summary>
-    /// <param name="accessToken">Токен доступа пользователя.</param>
-    /// <param name="sessionSecretKey">Секретный ключ сессии.</param>
-    /// <param name="direction">Направление пагинации.</param>
-    /// <param name="count">Количество записей на странице.</param>
-    /// <param name="cancellationToken">Токен отмены операции.</param>
-    /// <returns>Ответ с данными о группах и пагинации.</returns>
-    AnchorNavigator<UserGroupDto> GetUserGroupsAnchorNavigator(string accessToken,
-        string sessionSecretKey,
-        PagingDirection direction,
-        int count = 100,
-        CancellationToken cancellationToken = default);
-
-    #endregion
 }

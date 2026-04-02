@@ -1,5 +1,8 @@
-﻿using Odnoklassniki.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using Odnoklassniki.Exceptions;
+using Odnoklassniki.Interfaces;
 using Odnoklassniki.Interfaces.RestApiClients;
+using Odnoklassniki.Rest.RequestContexts;
 
 namespace Odnoklassniki.Rest.ApiClients.Auth;
 
@@ -11,63 +14,30 @@ namespace Odnoklassniki.Rest.ApiClients.Auth;
 /// Инициализирует новый экземпляр <see cref="AuthApiClient"/>.
 /// </remarks>
 /// <param name="clientCore">Ядро клиента OK.ru API для выполнения подписанных запросов.</param>
-public class AuthApiClient(IOkApiClientCore clientCore) : IAuthApiClient
+public class AuthApiClient(IOkApiClientCore clientCore, ILogger<AuthApiClient> logger) : IAuthApiClient
 {
     private const string OkClassName = "auth";
     private const string TouchSessionMethodName = $"{OkClassName}.touchSession";
 
-    /// <summary>
-    /// Продлевает срок действия **пользовательской сессии**.
-    /// Должен вызываться не реже чем раз в 30 минут при бездействии.
-    /// Для OAuth-сессий с правом <c>LONG_ACCESS_TOKEN</c> устанавливает новый срок действия — 30 дней.
-    /// Ограничение: не более 10 вызовов в месяц на пользователя.
-    /// </summary>
-    /// <param name="accessToken">
-    /// Токен доступа пользователя (OAuth-токен), полученный при авторизации.
-    /// </param>
-    /// <param name="sessionSecretKey">
-    /// Секретный ключ приложения (application secret), используемый для генерации подписи запроса.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Токен отмены операции.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/>, если сессия успешно продлена; иначе — <see langword="false"/>.
-    /// </returns>
-    /// <exception cref="ArgumentException">
-    /// Возникает, если <paramref name="accessToken"/> или <paramref name="sessionSecretKey"/> — null или пустые.
-    /// </exception>
-    /// <exception cref="Refit.ApiException">
-    /// Возникает при ошибках сети, недействительной подписи или превышении лимита вызовов.
-    /// </exception>
-    public async Task<bool> TouchAccountSessionAsync(
-        string accessToken,
-        string sessionSecretKey,
+    /// <inheritdoc />
+    public async Task<bool> TouchAccountSessionAsync(IRequestContext context,
         CancellationToken cancellationToken = default)
     {
+        switch (context)
+        {
+            case MainAccountRequestContext or ExplicitTokenRequestContext:
+                break;
+            default:
+                throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext),
+                    nameof(ExplicitTokenRequestContext));
+        }
+        
+        context.Deconstruct(out var accessToken, out var sessionSecretKey);
+        
         return await clientCore.CallAsync<bool>(
             methodName: TouchSessionMethodName,
             accessToken: accessToken,
             secret: sessionSecretKey,
             cancellationToken: cancellationToken);
-    }
-
-    /// <summary>
-    /// Продлевает срок действия **основной сессии приложения** (например, application access token),
-    /// настроенной внутри реализации <see cref="IOkApiClientCore"/>.
-    /// Используется для поддержания активности основного аккаунта приложения Prod Akk или Dev Akk.
-    /// </summary>
-    /// <param name="cancellationToken">
-    /// Токен отмены операции.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/>, если сессия приложения успешно продлена; иначе — <see langword="false"/>.
-    /// </returns>
-    /// <exception cref="Refit.ApiException">
-    /// Возникает, если клиент не настроен с учётными данными приложения или при ошибках API.
-    /// </exception>
-    public async Task<bool> TouchMainSessionAsync(CancellationToken cancellationToken = default)
-    {
-        return await clientCore.CallAsync<bool>(TouchSessionMethodName, cancellationToken: cancellationToken);
     }
 }
