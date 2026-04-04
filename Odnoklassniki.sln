@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{34CE6551-66E9-48A6-95C4-D9B0CB2175FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{16E8EDB7-9E45-4C12-9777-E524B620B772}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Odnoklassniki.ApiClient", "src\Odnoklassniki.ApiClient\Odnoklassniki.ApiClient.csproj", "{56ED3B60-B890-4B10-988F-96AB5CF0337A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Odnoklassniki.ApiClient.IntegrationTests", "tests\Odnoklassniki.Tests\Odnoklassniki.ApiClient.IntegrationTests.csproj", "{8B336F3E-163F-465C-A6AE-529F667C990C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{56ED3B60-B890-4B10-988F-96AB5CF0337A} = {34CE6551-66E9-48A6-95C4-D9B0CB2175FD}
+		{8B336F3E-163F-465C-A6AE-529F667C990C} = {16E8EDB7-9E45-4C12-9777-E524B620B772}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{56ED3B60-B890-4B10-988F-96AB5CF0337A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56ED3B60-B890-4B10-988F-96AB5CF0337A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56ED3B60-B890-4B10-988F-96AB5CF0337A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56ED3B60-B890-4B10-988F-96AB5CF0337A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B336F3E-163F-465C-A6AE-529F667C990C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B336F3E-163F-465C-A6AE-529F667C990C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B336F3E-163F-465C-A6AE-529F667C990C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B336F3E-163F-465C-A6AE-529F667C990C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

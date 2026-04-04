@@ -1,0 +1,35 @@
+﻿using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Odnoklassniki.Rest.ApiClients.Auth;
+using Odnoklassniki.Rest.RequestContexts;
+
+namespace Odnoklassniki.ApiClient.IntegrationTests;
+
+[Collection("Integration")] // Гарантирует последовательный запуск (из-за лимита 10/мес)
+[Trait("Category", "Integration")]
+public class AuthApiClientIntegrationTests(OkApiTestFixture fixture) : IClassFixture<OkApiTestFixture>
+{
+    private readonly AuthApiClient _authClient = new(fixture.ClientCore, Substitute.For<ILogger<AuthApiClient>>());
+
+    [Fact]
+    public async Task TouchAccountSessionAsync_WithValidUserToken_ShouldReturnTrue()
+    {
+        // Act
+        var result = await _authClient.TouchAccountSessionAsync(
+            new ExplicitTokenRequestContext(TestSettings.AccessPair),
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task TouchMainSessionAsync_WithValidAppSession_ShouldReturnTrue()
+    {
+        // Act
+        var result = await _authClient.TouchAccountSessionAsync(new MainAccountRequestContext(), CancellationToken.None);
+
+        // Assert
+        Assert.True(result);
+    }
+}
