@@ -13,7 +13,7 @@ namespace Odnoklassniki.Rest.RequestContexts.ValueObjects;
 /// <item><description>Формат идентификатора определяется платформой OK.ru (обычно строковое числовое значение).</description></item>
 /// </list>
 /// </remarks>
-public readonly record struct GroupId
+public record GroupId
 {
     /// <summary>
     /// Строковое представление идентификатора группы в формате OK.ru.

@@ -14,7 +14,7 @@ namespace Odnoklassniki.Rest.RequestContexts.ValueObjects;
 /// <item><description>Используется в методах <see cref="IFriendsApiClient"/> и связанных интерфейсах.</description></item>
 /// </list>
 /// </remarks>
-public readonly record struct FriendId
+public record FriendId
 {
     /// <summary>
     /// Строковое представление идентификатора друга в формате OK.ru.

@@ -34,7 +34,7 @@ public interface IPhotosApiClient
     /// <item><description>При ошибке доступа к альбому или аутентификации навигатор выбросит исключение при первой итерации.</description></item>
     /// </list>
     /// </remarks>
-    AnchorNavigator<PhotoData> GetPhotosAsync(
+    AnchorNavigator<PhotoData> GetPhotosNavigator(
         string albumId,
         IRequestContext context,
         AnchorConfiguration configuration,

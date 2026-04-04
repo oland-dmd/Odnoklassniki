@@ -17,7 +17,7 @@ public class PhotosApiClient(IOkApiClientCore okApi) : IPhotosApiClient
 {
     private const string OkClassName = "photos";
     /// <inheritdoc />
-    public AnchorNavigator<PhotoData> GetPhotosAsync(string albumId,
+    public AnchorNavigator<PhotoData> GetPhotosNavigator(string albumId,
         IRequestContext context,
         AnchorConfiguration configuration,
         CancellationToken cancellationToken = default)

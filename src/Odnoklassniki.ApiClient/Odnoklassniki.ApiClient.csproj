@@ -4,12 +4,13 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>Odnoklassniki.Api</PackageId>
+    <PackageId>Odnoklassniki.ApiClient</PackageId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Version>1.0.0</Version>
     <Authors>oland-dmd</Authors>
-    <Product>Odnoklassniki</Product>
+    <Product>Odnoklassniki.ApiClient</Product>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RootNamespace>Odnoklassniki</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -46,10 +47,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
     <PackageReference Include="Refit" Version="9.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Rest\ApiClients\Market\" />
   </ItemGroup>
 
 </Project>
