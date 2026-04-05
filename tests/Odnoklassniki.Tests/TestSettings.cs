@@ -1,6 +1,6 @@
-﻿using Odnoklassniki.Rest.RequestContexts.ValueObjects;
+﻿using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
-namespace Odnoklassniki.ApiClient.IntegrationTests;
+namespace Oland.Odnoklassniki.IntegrationTests;
 
 /// <summary>
 /// Конфигурационные константы и учётные данные для интеграции с API «Одноклассники» (OK.ru).

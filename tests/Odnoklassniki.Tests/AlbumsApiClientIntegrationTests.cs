@@ -1,9 +1,9 @@
-﻿using Odnoklassniki.Exceptions;
-using Odnoklassniki.Rest.AnchorNavigators;
-using Odnoklassniki.Rest.ApiClients.Photos;
-using Odnoklassniki.Rest.RequestContexts;
+﻿using Oland.Odnoklassniki.Exceptions;
+using Oland.Odnoklassniki.Rest.AnchorNavigators;
+using Oland.Odnoklassniki.Rest.ApiClients.Photos;
+using Oland.Odnoklassniki.Rest.RequestContexts;
 
-namespace Odnoklassniki.ApiClient.IntegrationTests;
+namespace Oland.Odnoklassniki.IntegrationTests;
 
 using Xunit;
 using System.Threading.Tasks;

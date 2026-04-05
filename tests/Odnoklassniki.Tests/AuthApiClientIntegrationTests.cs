@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Odnoklassniki.Rest.ApiClients.Auth;
-using Odnoklassniki.Rest.RequestContexts;
+using Oland.Odnoklassniki.Rest.ApiClients.Auth;
+using Oland.Odnoklassniki.Rest.RequestContexts;
 
-namespace Odnoklassniki.ApiClient.IntegrationTests;
+namespace Oland.Odnoklassniki.IntegrationTests;
 
 [Collection("Integration")] // Гарантирует последовательный запуск (из-за лимита 10/мес)
 [Trait("Category", "Integration")]

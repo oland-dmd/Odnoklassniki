@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Odnoklassniki.Rest.ApiClients.Discussions;
-using Odnoklassniki.Rest.RequestContexts;
+using Oland.Odnoklassniki.Rest.ApiClients.Discussions;
+using Oland.Odnoklassniki.Rest.RequestContexts;
 
-namespace Odnoklassniki.ApiClient.IntegrationTests;
+namespace Oland.Odnoklassniki.IntegrationTests;
 
 [Collection("Integration")]
 [Trait("Category", "Integration")]
