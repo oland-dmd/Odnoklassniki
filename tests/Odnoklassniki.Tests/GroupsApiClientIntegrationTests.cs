@@ -1,12 +1,12 @@
-﻿using Odnoklassniki.Enums;
-using Odnoklassniki.Exceptions;
-using Odnoklassniki.Rest.AnchorNavigators;
-using Odnoklassniki.Rest.ApiClients.Groups;
-using Odnoklassniki.Rest.ApiClients.Groups.Dtos;
-using Odnoklassniki.Rest.RequestContexts;
-using Odnoklassniki.Rest.RequestContexts.ValueObjects;
+﻿using Oland.Odnoklassniki.Enums;
+using Oland.Odnoklassniki.Exceptions;
+using Oland.Odnoklassniki.Rest.AnchorNavigators;
+using Oland.Odnoklassniki.Rest.ApiClients.Groups;
+using Oland.Odnoklassniki.Rest.ApiClients.Groups.Dtos;
+using Oland.Odnoklassniki.Rest.RequestContexts;
+using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
-namespace Odnoklassniki.ApiClient.IntegrationTests;
+namespace Oland.Odnoklassniki.IntegrationTests;
 
 [Collection("Integration")]
 [Trait("Category", "Integration")]

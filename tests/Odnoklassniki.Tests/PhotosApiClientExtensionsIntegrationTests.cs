@@ -1,13 +1,13 @@
-﻿using Odnoklassniki.Exceptions;
-using Odnoklassniki.Image;
-using Odnoklassniki.Rest.AnchorNavigators;
-using Odnoklassniki.Rest.ApiClients.Photos;
-using Odnoklassniki.Rest.ApiClients.PhotosV2;
-using Odnoklassniki.Rest.ApiClients.PhotosV2.Datas;
-using Odnoklassniki.Rest.RequestContexts;
-using Odnoklassniki.Rest.RequestContexts.ValueObjects;
+﻿using Oland.Odnoklassniki.Exceptions;
+using Oland.Odnoklassniki.Image;
+using Oland.Odnoklassniki.Rest.AnchorNavigators;
+using Oland.Odnoklassniki.Rest.ApiClients.Photos;
+using Oland.Odnoklassniki.Rest.ApiClients.PhotosV2;
+using Oland.Odnoklassniki.Rest.ApiClients.PhotosV2.Datas;
+using Oland.Odnoklassniki.Rest.RequestContexts;
+using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
-namespace Odnoklassniki.ApiClient.IntegrationTests;
+namespace Oland.Odnoklassniki.IntegrationTests;
 
 [Collection("Integration")]
 [Trait("Category", "Integration")]

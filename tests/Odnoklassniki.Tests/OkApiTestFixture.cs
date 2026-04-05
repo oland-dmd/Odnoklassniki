@@ -1,9 +1,9 @@
 ﻿// OkApiTestFixture.cs
 using Microsoft.Extensions.Options;
-using Odnoklassniki.Interfaces;
-using Odnoklassniki.Rest.ApiClientCore;
+using Oland.Odnoklassniki.Interfaces;
+using Oland.Odnoklassniki.Rest.ApiClientCore;
 
-namespace Odnoklassniki.ApiClient.IntegrationTests;
+namespace Oland.Odnoklassniki.IntegrationTests;
 
 public class OkApiTestFixture : IDisposable
 {
