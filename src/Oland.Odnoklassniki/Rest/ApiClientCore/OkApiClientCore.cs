@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Oland.Odnoklassniki.Exceptions;
 using Oland.Odnoklassniki.Interfaces;
+using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
 namespace Oland.Odnoklassniki.Rest.ApiClientCore;
 
@@ -33,35 +34,26 @@ public class OkApiClientCore : IOkApiClientCore, IDisposable
     /// <inheritdoc/>
     public async Task<string?> CallAsync(
         string methodName,
-        string accessToken = "",
-        string sessionSecretKey = "",
+        AccessPair accessPair,
         RestParameters? parameters = null,
         bool? markOnline = false, CancellationToken cancellationToken = default)
     {
         ThrowIfEmpty(methodName, nameof(methodName));
-        if (string.IsNullOrWhiteSpace(accessToken))
-        {
-            accessToken = _options.Value.AccessToken;
-        }
-        if (string.IsNullOrWhiteSpace(sessionSecretKey))
-        {
-            sessionSecretKey = _options.Value.SessionSecretKey;
-        }
         
         var rootParams = new Dictionary<string, string>
         {
             ["method"] = methodName,
             ["format"] = "json",
             ["application_key"] = _options.Value.ApplicationKey,
-            ["access_token"] = accessToken
+            ["access_token"] = accessPair.AccessToken
         };
 
         var mergedParams = parameters?.MergeParameters(rootParams) ?? rootParams;
 
-        var sig = CalculateSig(sessionSecretKey, mergedParams.AsReadOnly());
+        var sig = CalculateSig(accessPair.SessionSecretKey, mergedParams.AsReadOnly());
         mergedParams["sig"] = sig;
 
-        string queryString = GenerateQueryString(mergedParams.AsReadOnly());
+        var queryString = GenerateQueryString(mergedParams.AsReadOnly());
 
         var requestUri = $"fb.do?{queryString}";
 
@@ -85,12 +77,11 @@ public class OkApiClientCore : IOkApiClientCore, IDisposable
     /// <inheritdoc/>
     public async Task<T?> CallAsync<T>(
         string methodName,
-        string accessToken = "",
-        string sessionSecretKey = "",
+        AccessPair accessPair,
         RestParameters? parameters = null,
         bool? markOnline = false, CancellationToken cancellationToken = default)
     {
-        var stringResult = await CallAsync(methodName, accessToken, sessionSecretKey, parameters, markOnline, cancellationToken);
+        var stringResult = await CallAsync(methodName, accessPair, parameters, markOnline, cancellationToken);
 
         if (string.IsNullOrWhiteSpace(stringResult))
         {

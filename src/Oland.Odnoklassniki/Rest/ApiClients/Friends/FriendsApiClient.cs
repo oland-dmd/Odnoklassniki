@@ -26,12 +26,9 @@ public class FriendsApiClient(IOkApiClientCore okApi) : IFriendsApiClient
             _ => throw new UnexpectedRequestContext(context, nameof(FriendRequestContext),nameof(MainAccountRequestContext),nameof(ExplicitTokenRequestContext))
         };
 
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
         var result = await okApi.CallAsync<ICollection<string>>(
             GetMethodName,
-            accessToken,
-            sessionSecretKey,
+            context.AccessPair,
             parameters,
             cancellationToken: cancellationToken);
         

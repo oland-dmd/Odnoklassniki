@@ -48,7 +48,7 @@ public class PhotosApiClient(IOkApiClientCore okApi) : IPhotosApiClient
         }
 
         var response = await okApi.CallAsync<PhotoResponse>(
-            GetPhotoInfoMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+            GetPhotoInfoMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         return new PhotoData
         {
@@ -86,7 +86,7 @@ public class PhotosApiClient(IOkApiClientCore okApi) : IPhotosApiClient
             parameters = parameters.InsertAlbumId(albumId);
         
         var response = await okApi.CallAsync<PhotosResponse>(
-            GetPhotosMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+            GetPhotosMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         return new AnchorResponse<PhotoData>()
         {
@@ -123,7 +123,7 @@ public class PhotosApiClient(IOkApiClientCore okApi) : IPhotosApiClient
         }
 
         return await okApi.CallAsync<bool>(
-            EditPhotosMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+            EditPhotosMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
     }
 
@@ -146,6 +146,6 @@ public class PhotosApiClient(IOkApiClientCore okApi) : IPhotosApiClient
         }
         
         await okApi.CallAsync(
-            DeletePhotoMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+            DeletePhotoMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
     }
 }

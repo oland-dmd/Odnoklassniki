@@ -1,6 +1,9 @@
-﻿using Oland.Odnoklassniki.Enums;
+﻿using Microsoft.Extensions.Options;
+using NSubstitute;
+using Oland.Odnoklassniki.Enums;
 using Oland.Odnoklassniki.Exceptions;
 using Oland.Odnoklassniki.Rest.AnchorNavigators;
+using Oland.Odnoklassniki.Rest.ApiClientCore;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Dtos;
 using Oland.Odnoklassniki.Rest.RequestContexts;
@@ -10,9 +13,22 @@ namespace Oland.Odnoklassniki.IntegrationTests;
 
 [Collection("Integration")]
 [Trait("Category", "Integration")]
-public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassFixture<OkApiTestFixture>
+public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
 {
-    private readonly GroupsApiClient _groupsClient = new(fixture.ClientCore);
+    private readonly GroupsApiClient _groupsClient;
+
+    public GroupsApiClientIntegrationTests(OkApiTestFixture fixture)
+    {
+        var options = Substitute.For<IOptions<ApplicationOptions>>();
+        options.Value.Returns(new ApplicationOptions()
+        {
+            AccessToken = TestSettings.AccessPair.AccessToken,
+            SessionSecretKey =  TestSettings.AccessPair.SessionSecretKey,
+            ApplicationKey =  TestSettings.ApplicationKey
+        });
+        
+        _groupsClient = new GroupsApiClient(fixture.ClientCore, new MainAccountRequestContext(options));
+    }
 
     #region GetInfoAsync (Получение информации о группах)
 

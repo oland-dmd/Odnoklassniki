@@ -243,6 +243,25 @@ public class RestParameters
         return this;
     }
 
+    public RestParameters InsertCatalogId(string catalogId)
+    {
+        if (string.IsNullOrEmpty(catalogId))
+        {
+            throw new ArgumentException("Catalog Id can not be null or empty", nameof(catalogId));
+        }
+        
+        _parameters["catalog_id"] = catalogId;
+        
+        return this;
+    }
+
+    public RestParameters InsertAdminRestricted(bool adminRestricted)
+    {
+        _parameters["admin_restricted"] = adminRestricted.ToString();
+
+        return this;
+    }
+    
     /// <summary>
     /// Добавляет заголовок (название) в параметры запроса.
     /// </summary>
@@ -274,6 +293,18 @@ public class RestParameters
         }
 
         _parameters["title"] = title;
+
+        return this;
+    }
+
+    public RestParameters InsertName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new ArgumentException("Title can not be null or empty", nameof(name));
+        }
+        
+        _parameters["name"] = name;
 
         return this;
     }

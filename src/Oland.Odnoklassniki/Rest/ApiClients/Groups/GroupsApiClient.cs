@@ -15,7 +15,7 @@ namespace Oland.Odnoklassniki.Rest.ApiClients.Groups;
 /// Поддерживает работу как с основным аккаунтом (настроенным в IOkApiClientCore),
 /// так и с произвольными пользовательскими токенами.
 /// </summary>
-public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
+public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext mainContext) : IGroupsApiClient
 {
     private const string OkClassName = "group";
 
@@ -42,10 +42,8 @@ public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
                 throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
 
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
         var response = await okApi.CallAsync<GroupInfoResponse[]>(
-            GetInfoMethodName, accessToken, sessionSecretKey, parameters, cancellationToken: cancellationToken);
+            GetInfoMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         return response?.Select(r => new GroupInfoDto { Id = r.Id, Name = r.Name, AddAlbumAllowed = r.Attributes?.Flags.Contains("ap") ?? false }).ToArray();
     }
@@ -66,7 +64,7 @@ public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
             .InsertRootGroupId(groupId.Value);
 
         var response = await okApi.CallAsync<ICollection<GroupUserInfoResponse>>(
-            GetUserGroupsByIdsMethodName, parameters: parameters, cancellationToken: cancellationToken);
+            GetUserGroupsByIdsMethodName, mainContext.AccessPair, parameters: parameters, cancellationToken: cancellationToken);
 
         return response?.Select(item => new GroupUserInfoDto
         {
@@ -106,12 +104,9 @@ public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
                 throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
 
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
         var response = await okApi.CallAsync<UserGroupsResponse>(
             GetUserGroupsV2MethodName,
-            accessToken,
-            sessionSecretKey,
+            context.AccessPair,
             parameters,
             cancellationToken: cancellationToken);
 

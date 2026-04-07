@@ -40,8 +40,7 @@ public class PhotosV2ApiClient(IOkApiClientCore okApi) : IPhotosV2ApiClient
 
         var response = await okApi.CallAsync<UploadPhotoResponse>(
             GetUploadUrlMethodName,
-            context.AccessPair.AccessToken,
-            context.AccessPair.SessionSecretKey,
+            context.AccessPair,
             parameters,
             cancellationToken: cancellationToken);
 
@@ -75,8 +74,7 @@ public class PhotosV2ApiClient(IOkApiClientCore okApi) : IPhotosV2ApiClient
 
         var response = await okApi.CallAsync<CommitResponse>(
             CommitMethodName,
-            context.AccessPair.AccessToken,
-            context.AccessPair.SessionSecretKey,
+            context.AccessPair,
             parameters,
             cancellationToken: cancellationToken);
 

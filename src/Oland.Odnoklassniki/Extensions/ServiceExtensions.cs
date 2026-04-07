@@ -10,6 +10,7 @@ using Oland.Odnoklassniki.Rest.ApiClients.Groups;
 using Oland.Odnoklassniki.Rest.ApiClients.Photos;
 using Oland.Odnoklassniki.Rest.ApiClients.PhotosV2;
 using Oland.Odnoklassniki.Rest.ApiClients.Users;
+using Oland.Odnoklassniki.Rest.RequestContexts;
 
 namespace Oland.Odnoklassniki.Extensions;
 
@@ -81,7 +82,9 @@ public static class ServiceExtensions
             .AddScoped<IUserApiClient, UserApiClient>()
             .AddScoped<IFriendsApiClient, FriendsApiClient>()
             .AddScoped<IGroupsApiClient, GroupsApiClient>()
-            .AddScoped<ImageClient>();
+            .AddScoped<ImageClient>()
+            .AddScoped<MainAccountRequestContext>()
+            .AddScoped<MainGroupRequestContext>();
 
         return services;
     }

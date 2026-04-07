@@ -26,7 +26,7 @@ public class UserApiClient(IOkApiClientCore okApi) : IUserApiClient
                 throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
         
-        var result = await okApi.CallAsync<string>(GetLoggedInUserMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, cancellationToken: cancellationToken);
+        var result = await okApi.CallAsync<string>(GetLoggedInUserMethodName, context.AccessPair, cancellationToken: cancellationToken);
 
         return result?.Trim('"');
     }
@@ -48,7 +48,7 @@ public class UserApiClient(IOkApiClientCore okApi) : IUserApiClient
                 throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
         
-        var response = await okApi.CallAsync<UserInfoResponse>(GetCurrentUserMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+        var response = await okApi.CallAsync<UserInfoResponse>(GetCurrentUserMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         var result = new UserData
         {

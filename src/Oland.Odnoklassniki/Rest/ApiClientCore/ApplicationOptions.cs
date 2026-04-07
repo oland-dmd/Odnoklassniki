@@ -37,4 +37,9 @@ public class ApplicationOptions
     /// на стороне сервиса Одноклассников и при отладке запросов.
     /// </remarks>
     public string? UserAgent { get; init; }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    public required string GroupId { get; init; }
 }
