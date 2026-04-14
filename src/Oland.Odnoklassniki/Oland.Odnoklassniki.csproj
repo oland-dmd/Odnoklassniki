@@ -49,4 +49,8 @@
     <PackageReference Include="Refit" Version="10.1.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Oland.MediaManager\Oland.MediaManager.Application\Oland.MediaManager.Application.csproj" />
+  </ItemGroup>
+
 </Project>

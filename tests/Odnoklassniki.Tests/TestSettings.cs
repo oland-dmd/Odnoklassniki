@@ -110,4 +110,6 @@ public static class TestSettings
         !string.IsNullOrEmpty(ApplicationKey) &&
         !string.IsNullOrEmpty(ApplicationSecret) &&
         !string.IsNullOrEmpty(UserAccessToken);
+
+    public static readonly CatalogId CatalogId = new("157269177595327");
 }

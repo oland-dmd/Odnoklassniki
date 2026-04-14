@@ -133,9 +133,12 @@ public class RestParameters
     /// <exception cref="System.ArgumentException">
     /// Возникает, если <paramref name="key"/> равен <see langword="null"/> или пустой строке.
     /// </exception>
-    public RestParameters InsertCustomParameter(string key, object value) 
+    public RestParameters InsertCustomParameter(string key, object? value) 
     {
-        _parameters[key] = value;
+        if (value != null)
+        {
+            _parameters[key] = value;
+        }
 
         return this;
     }
@@ -231,14 +234,12 @@ public class RestParameters
     /// <exception cref="System.ArgumentException">
     /// Возникает, если <paramref name="photoId"/> равен <see langword="null"/> или пустой строке.
     /// </exception>
-    public RestParameters InsertPhotoId(string photoId)
+    public RestParameters InsertPhotoId(string? photoId)
     {
-        if (string.IsNullOrEmpty(photoId))
+        if (!string.IsNullOrEmpty(photoId))
         {
-            throw new ArgumentException("Photo Id can not be null or empty", nameof(photoId));
+            _parameters["photo_id"] = photoId;
         }
-
-        _parameters["photo_id"] = photoId;
 
         return this;
     }
@@ -251,6 +252,61 @@ public class RestParameters
         }
         
         _parameters["catalog_id"] = catalogId;
+        
+        return this;
+    }
+    
+    public RestParameters InsertTab(string tab)
+    {
+        if (string.IsNullOrEmpty(tab))
+        {
+            throw new ArgumentException("Tab can not be null or empty", nameof(tab));
+        }
+        
+        _parameters["tab"] = tab;
+        
+        return this;
+    }
+    
+    public RestParameters InsertProductId(string productId)
+    {
+        if (string.IsNullOrEmpty(productId))
+        {
+            throw new ArgumentException("Product Id can not be null or empty", nameof(productId));
+        }
+        
+        _parameters["product_id"] = productId;
+        
+        return this;
+    }
+    
+    public RestParameters InsertAttachment(string attachment)
+    {
+        if (string.IsNullOrEmpty(attachment))
+        {
+            throw new ArgumentException("attachment can not be null or empty", nameof(attachment));
+        }
+        
+        _parameters["attachment"] = attachment;
+        
+        return this;
+    }
+    
+    public RestParameters InsertProductIds(IEnumerable<string> productIds)
+    {
+        if (productIds == null || !productIds.Any())
+        {
+            throw new ArgumentException("Product Ids can not be null or empty", nameof(productIds));
+        }
+        
+        _parameters["product_ids"] = string.Join(',', productIds);
+        
+        return this;
+    }
+    
+    public RestParameters InsertCatalogIds(IEnumerable<string> catalogIds)
+    {
+        _parameters["catalog_ids"] = string.Join(',', catalogIds.ToArray());
         
         return this;
     }

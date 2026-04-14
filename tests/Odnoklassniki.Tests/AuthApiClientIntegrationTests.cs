@@ -34,7 +34,8 @@ public class AuthApiClientIntegrationTests(OkApiTestFixture fixture) : IClassFix
         {
             AccessToken = TestSettings.AccessPair.AccessToken,
             SessionSecretKey =  TestSettings.AccessPair.SessionSecretKey,
-            ApplicationKey =  TestSettings.ApplicationKey
+            ApplicationKey =  TestSettings.ApplicationKey,
+            GroupId = TestSettings.GroupId.Value
         });
         var result = await _authClient.TouchAccountSessionAsync(new MainAccountRequestContext(options), CancellationToken.None);
 

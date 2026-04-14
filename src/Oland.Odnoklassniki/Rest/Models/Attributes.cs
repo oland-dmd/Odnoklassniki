@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Oland.Odnoklassniki.Common;
 using Oland.Odnoklassniki.Rest.ApiClients.Photos.Response.Album;
 
 namespace Oland.Odnoklassniki.Rest.Models;
@@ -24,7 +25,7 @@ namespace Oland.Odnoklassniki.Rest.Models;
 /// Значение поля <c>flags</c> представляет собой битовую маску или строковое представление
 /// состояния альбома. Конкретная интерпретация зависит от версии API и контекста запроса.
 /// </remarks>
-public class Attributes
+public record Attributes : BaseOkDto
 {
     /// <summary>
     /// Строковое представление флагов альбома. Обязательное поле.

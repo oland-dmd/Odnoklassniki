@@ -24,7 +24,8 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         {
             AccessToken = TestSettings.AccessPair.AccessToken,
             SessionSecretKey =  TestSettings.AccessPair.SessionSecretKey,
-            ApplicationKey =  TestSettings.ApplicationKey
+            ApplicationKey =  TestSettings.ApplicationKey,
+            GroupId = TestSettings.GroupId.Value
         });
         
         _groupsClient = new GroupsApiClient(fixture.ClientCore, new MainAccountRequestContext(options));
@@ -39,7 +40,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         var groupIds = new[] { TestSettings.GroupId.Value };
 
         // Act
-        var result = await _groupsClient.GetGroupsInfoAsync(
+        var result = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -57,7 +58,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         var groupIds = new[] { TestSettings.GroupId.Value, TestSettings.GroupId.Value };
 
         // Act
-        var result = await _groupsClient.GetGroupsInfoAsync(
+        var result = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -77,7 +78,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         // Act & Assert
         await Assert.ThrowsAsync<OkApiException>(async () =>
         {
-            await _groupsClient.GetGroupsInfoAsync(
+            await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
                 groupIds: groupIds,
                 new ExplicitTokenRequestContext(TestSettings.AccessPair),
                 cancellationToken: CancellationToken.None);
@@ -91,7 +92,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         var groupIds = new string[] { };
 
         // Act & Assert
-        var groups = await _groupsClient.GetGroupsInfoAsync(
+        var groups = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -109,7 +110,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         // Act & Assert
         await Assert.ThrowsAsync<OkApiException>(async () =>
         {
-            await _groupsClient.GetGroupsInfoAsync(
+            await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
                 groupIds: groupIds,
                 new ExplicitTokenRequestContext(TestSettings.AccessPair with{AccessToken = invalidToken}),
                 cancellationToken: CancellationToken.None);
@@ -127,7 +128,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         // Act & Assert
         await Assert.ThrowsAsync<TaskCanceledException>(async () =>
         {
-            await _groupsClient.GetGroupsInfoAsync(
+            await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
                 groupIds: groupIds,
                 new ExplicitTokenRequestContext(TestSettings.AccessPair),
                 cancellationToken: cancellationTokenSource.Token);
@@ -141,7 +142,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         var groupIds = new[] { TestSettings.GroupId.Value };
 
         // Act
-        var result = await _groupsClient.GetGroupsInfoAsync(
+        var result = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -475,7 +476,7 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
         var groupIds = new[] { TestSettings.GroupId.Value };
 
         // Act
-        var results = await _groupsClient.GetGroupsInfoAsync(
+        var results = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);

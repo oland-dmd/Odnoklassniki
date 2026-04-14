@@ -1,10 +1,12 @@
-﻿using Oland.Odnoklassniki.Exceptions;
+﻿using Oland.Odnoklassniki.Common;
+using Oland.Odnoklassniki.Exceptions;
 using Oland.Odnoklassniki.Interfaces;
 using Oland.Odnoklassniki.Interfaces.RestApiClients;
 using Oland.Odnoklassniki.Rest.AnchorNavigators;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Dtos;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Extensions;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Responses;
+using Oland.Odnoklassniki.Rest.BeanFields;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
@@ -22,16 +24,19 @@ public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext m
     private const string GetInfoMethodName = $"{OkClassName}.getInfo";
 
     /// <inheritdoc />
-    public async Task<ICollection<GroupInfoDto>?> GetGroupsInfoAsync(ICollection<string> groupIds,
+    public async Task<ICollection<T>?> GetGroupsInfoAsync<T>(ICollection<string> groupIds,
         IRequestContext context,
-        CancellationToken cancellationToken = default)
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default) where T: BaseOkDto
     {
         if (groupIds.Count == 0)
             return [];
+        
+        fields ??= [GroupBeanFields.Name, GroupBeanFields.Uid, GroupBeanFields.AddPhotoAlbumAllowed];
 
         var parameters = new RestParameters()
             .InsertGroups(groupIds)
-            .InsertFields("name", "uid", "ADD_PHOTOALBUM_ALLOWED");
+            .InsertFields(fields.ToArray());
 
         switch (context)
         {
@@ -42,10 +47,10 @@ public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext m
                 throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
 
-        var response = await okApi.CallAsync<GroupInfoResponse[]>(
+        var response = await okApi.CallAsync<T[]>(
             GetInfoMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
-        return response?.Select(r => new GroupInfoDto { Id = r.Id, Name = r.Name, AddAlbumAllowed = r.Attributes?.Flags.Contains("ap") ?? false }).ToArray();
+        return response;
     }
 
     private const string GetUserGroupsByIdsMethodName = $"{OkClassName}.getUserGroupsByIds";

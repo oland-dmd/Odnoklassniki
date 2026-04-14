@@ -19,7 +19,8 @@ public class AnchorNavigator<TResponse>(Func<AnchorConfiguration, Task<AnchorRes
     {
         Current = new AnchorResponse<TResponse>
         {
-            Anchor = ""
+            Anchor = "",
+            HasMore = true
         };
     }
 

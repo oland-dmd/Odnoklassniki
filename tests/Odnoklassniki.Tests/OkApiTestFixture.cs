@@ -18,7 +18,8 @@ public class OkApiTestFixture : IDisposable
         {
             ApplicationKey = TestSettings.ApplicationKey!,
             SessionSecretKey = TestSettings.AccessPair.SessionSecretKey,
-            AccessToken = TestSettings.AccessPair.AccessToken
+            AccessToken = TestSettings.AccessPair.AccessToken,
+            GroupId = TestSettings.GroupId.Value
         };
 
         ClientCore = new OkApiClientCore(new OptionsWrapper<ApplicationOptions>(options));
