@@ -4,6 +4,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <TargetFrameworks>net10.0;net9.0</TargetFrameworks>
+        <PackageId>Oland.MediaManager.Application</PackageId>
+        <Version>1.0.0</Version>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>

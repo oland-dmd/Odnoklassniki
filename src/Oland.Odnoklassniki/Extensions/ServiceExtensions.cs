@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Oland.MediaManager.Application.DependencyInjection;
 using Oland.Odnoklassniki.Image;
 using Oland.Odnoklassniki.Interfaces;
 using Oland.Odnoklassniki.Interfaces.RestApiClients;
@@ -73,6 +74,8 @@ public static class ServiceExtensions
         services.AddScoped<IOkApiClientCore, OkApiClientCore>();
         services.AddOptions<ApplicationOptions>()
             .BindConfiguration("OkApi");
+
+        services.AddMediaManager();
 
         services.AddScoped<IAlbumsApiClient, AlbumsApiClient>()
             .AddScoped<IPhotosApiClient, PhotosApiClient>()
