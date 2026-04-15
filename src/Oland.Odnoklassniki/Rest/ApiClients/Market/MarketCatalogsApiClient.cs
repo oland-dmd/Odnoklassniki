@@ -124,6 +124,7 @@ public class MarketCatalogsApiClient(IOkApiClientCore okApi) : IMarketCatalogsAp
         return response?.Success ?? false;
     }
 
+    /// <inheritdoc />
     public AnchorNavigator<TCatalogDto> GetByGroupAnchorNavigator<TCatalogDto>(IRequestContext context,
         AnchorConfiguration anchorConfiguration,
         IEnumerable<string>? fields = null,
@@ -169,7 +170,8 @@ public class MarketCatalogsApiClient(IOkApiClientCore okApi) : IMarketCatalogsAp
 
     private const string GetCatalogsByIdsMethodName = $"{OkClassName}.getCatalogsByIds";
 
-    public async Task<ICollection<TCatalogDto>> GetByIdsAsync<TCatalogDto>(IEnumerable<string> catalogIds,
+    /// <inheritdoc />
+    public async Task<ICollection<TCatalogDto>> GetByIdsAsync<TCatalogDto>(ICollection<string> catalogIds,
         IRequestContext context,
         IEnumerable<string>? fields = null,
         CancellationToken cancellationToken = default)

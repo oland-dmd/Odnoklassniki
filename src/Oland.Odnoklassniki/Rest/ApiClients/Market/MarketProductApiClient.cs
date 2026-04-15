@@ -13,6 +13,7 @@ using Oland.Odnoklassniki.Rest.RequestContexts;
 
 namespace Oland.Odnoklassniki.Rest.ApiClients.Market;
 
+/// <inheritdoc />
 public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService mediaService) : IMarketProductsApiClient
 {
     private const string OkClassName = "market";
@@ -110,6 +111,7 @@ public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService media
 
     private const string DeleteMethodName = $"{OkClassName}.delete";
 
+    /// <inheritdoc />
     public async Task<bool> DeleteAsync(string productId, IRequestContext context, CancellationToken cancellationToken = default)
     {
         var parameters = new RestParameters()
@@ -133,6 +135,7 @@ public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService media
         return response?.Success ?? false;
     }
 
+    /// <inheritdoc />
     public AnchorNavigator<TDto> GetByCatalogNavigator<TDto>(IRequestContext context,
         AnchorConfiguration anchorConfiguration, IEnumerable<string>? fields = null, CancellationToken cancellationToken = default) where TDto : BaseOkDto
     {
@@ -181,6 +184,7 @@ public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService media
         };
     }
 
+    /// <inheritdoc />
     public AnchorNavigator<TDto> GetProductsNavigator<TDto>(IRequestContext context, AnchorConfiguration anchorConfiguration,
         IEnumerable<string>? fields = null, bool onModeration = false, CancellationToken cancellationToken = default) where TDto : BaseOkDto
     {
@@ -238,6 +242,7 @@ public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService media
 
     private const string GetByIdsMethodName = $"{OkClassName}.getByIds";
 
+    /// <inheritdoc />
     public async Task<ICollection<TDto>> GetByIdsAsync<TDto>(ICollection<string> productIds, IRequestContext context, IEnumerable<string>? fields = null,
         CancellationToken cancellationToken = default) where TDto : BaseOkDto
     {
@@ -272,6 +277,7 @@ public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService media
 
     private const string PinMethodName = $"{OkClassName}.pin";
 
+    /// <inheritdoc />
     public async Task<bool> PinAsync(string productId,
         bool on,
         IRequestContext context,
@@ -304,6 +310,7 @@ public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService media
 
     private const string ReorderMethodName = $"{OkClassName}.reorder";
 
+    /// <inheritdoc />
     public async Task<bool> ReorderAsync(string productId, IRequestContext context, string? afterProductId = null,
         CancellationToken cancellationToken = default)
     {

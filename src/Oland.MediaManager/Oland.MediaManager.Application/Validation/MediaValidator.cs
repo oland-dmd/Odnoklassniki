@@ -5,8 +5,10 @@ using Oland.MediaManager.Domain.MediaItems.Poll;
 
 namespace Oland.MediaManager.Application.Validation;
 
+/// <inheritdoc />
 public class MediaValidator : IMediaValidator
 {
+    /// <inheritdoc />
     public ValidationResult Validate(MediaCollection collection)
     {
         var errors = new List<string>();
