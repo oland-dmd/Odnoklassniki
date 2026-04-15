@@ -32,12 +32,9 @@ public class AuthApiClient(IOkApiClientCore clientCore, ILogger<AuthApiClient> l
                     nameof(ExplicitTokenRequestContext));
         }
         
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
         return await clientCore.CallAsync<bool>(
             methodName: TouchSessionMethodName,
-            accessToken: accessToken,
-            secret: sessionSecretKey,
+            context.AccessPair,
             cancellationToken: cancellationToken);
     }
 }

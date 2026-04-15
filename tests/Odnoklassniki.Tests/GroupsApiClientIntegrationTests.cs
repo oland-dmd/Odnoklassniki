@@ -1,6 +1,9 @@
-﻿using Oland.Odnoklassniki.Enums;
+﻿using Microsoft.Extensions.Options;
+using NSubstitute;
+using Oland.Odnoklassniki.Enums;
 using Oland.Odnoklassniki.Exceptions;
 using Oland.Odnoklassniki.Rest.AnchorNavigators;
+using Oland.Odnoklassniki.Rest.ApiClientCore;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Dtos;
 using Oland.Odnoklassniki.Rest.RequestContexts;
@@ -10,9 +13,23 @@ namespace Oland.Odnoklassniki.IntegrationTests;
 
 [Collection("Integration")]
 [Trait("Category", "Integration")]
-public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassFixture<OkApiTestFixture>
+public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
 {
-    private readonly GroupsApiClient _groupsClient = new(fixture.ClientCore);
+    private readonly GroupsApiClient _groupsClient;
+
+    public GroupsApiClientIntegrationTests(OkApiTestFixture fixture)
+    {
+        var options = Substitute.For<IOptions<ApplicationOptions>>();
+        options.Value.Returns(new ApplicationOptions()
+        {
+            AccessToken = TestSettings.AccessPair.AccessToken,
+            SessionSecretKey =  TestSettings.AccessPair.SessionSecretKey,
+            ApplicationKey =  TestSettings.ApplicationKey,
+            GroupId = TestSettings.GroupId.Value
+        });
+        
+        _groupsClient = new GroupsApiClient(fixture.ClientCore, new MainAccountRequestContext(options));
+    }
 
     #region GetInfoAsync (Получение информации о группах)
 
@@ -23,7 +40,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         var groupIds = new[] { TestSettings.GroupId.Value };
 
         // Act
-        var result = await _groupsClient.GetGroupsInfoAsync(
+        var result = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -41,7 +58,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         var groupIds = new[] { TestSettings.GroupId.Value, TestSettings.GroupId.Value };
 
         // Act
-        var result = await _groupsClient.GetGroupsInfoAsync(
+        var result = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -61,7 +78,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         // Act & Assert
         await Assert.ThrowsAsync<OkApiException>(async () =>
         {
-            await _groupsClient.GetGroupsInfoAsync(
+            await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
                 groupIds: groupIds,
                 new ExplicitTokenRequestContext(TestSettings.AccessPair),
                 cancellationToken: CancellationToken.None);
@@ -75,7 +92,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         var groupIds = new string[] { };
 
         // Act & Assert
-        var groups = await _groupsClient.GetGroupsInfoAsync(
+        var groups = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -93,7 +110,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         // Act & Assert
         await Assert.ThrowsAsync<OkApiException>(async () =>
         {
-            await _groupsClient.GetGroupsInfoAsync(
+            await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
                 groupIds: groupIds,
                 new ExplicitTokenRequestContext(TestSettings.AccessPair with{AccessToken = invalidToken}),
                 cancellationToken: CancellationToken.None);
@@ -111,7 +128,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         // Act & Assert
         await Assert.ThrowsAsync<TaskCanceledException>(async () =>
         {
-            await _groupsClient.GetGroupsInfoAsync(
+            await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
                 groupIds: groupIds,
                 new ExplicitTokenRequestContext(TestSettings.AccessPair),
                 cancellationToken: cancellationTokenSource.Token);
@@ -125,7 +142,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         var groupIds = new[] { TestSettings.GroupId.Value };
 
         // Act
-        var result = await _groupsClient.GetGroupsInfoAsync(
+        var result = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
@@ -459,7 +476,7 @@ public class GroupsApiClientIntegrationTests(OkApiTestFixture fixture) : IClassF
         var groupIds = new[] { TestSettings.GroupId.Value };
 
         // Act
-        var results = await _groupsClient.GetGroupsInfoAsync(
+        var results = await _groupsClient.GetGroupsInfoAsync<GroupInfoDto>(
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);

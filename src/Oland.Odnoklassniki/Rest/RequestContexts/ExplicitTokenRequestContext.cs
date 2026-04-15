@@ -50,28 +50,6 @@ public record ExplicitTokenRequestContext : IRequestContext
     }
 
     /// <summary>
-    /// Деконструирует контекст на отдельные компоненты учётных данных.
-    /// </summary>
-    /// <param name="accessToken">
-    /// Возвращает токен доступа (<c>AccessPair.AccessToken</c>) для использования в запросах.
-    /// </param>
-    /// <param name="sessionSecretKey">
-    /// Возвращает секрет сессии (<c>AccessPair.SessionSecretKey</c>) для расчёта подписи.
-    /// </param>
-    /// <remarks>
-    /// Позволяет использовать паттерн деконструкции для извлечения учётных данных:
-    /// <code>
-    /// var (token, secret) = requestContext;
-    /// </code>
-    /// Не копируйте и не сохраняйте извлечённые значения вне контекста выполнения запроса.
-    /// </remarks>
-    public void Deconstruct(out string accessToken, out string sessionSecretKey)
-    {
-        accessToken = AccessPair.AccessToken;
-        sessionSecretKey = AccessPair.SessionSecretKey;
-    }
-
-    /// <summary>
     /// Применяет контекст к параметрам запроса. В данной реализации не модифицирует входные данные.
     /// </summary>
     /// <param name="parameters">Исходные параметры запроса типа <see cref="RestParameters"/>.</param>

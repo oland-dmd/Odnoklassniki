@@ -8,6 +8,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oland.Odnoklassniki.Integra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oland.Odnoklassniki", "src\Oland.Odnoklassniki\Oland.Odnoklassniki.csproj", "{EB114283-92D1-43FA-B2F1-4B57342745FC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MediaManager", "MediaManager", "{C62E594D-54B3-46E0-929C-65FF027FE72E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oland.MediaManager.Domain", "src\Oland.MediaManager\Oland.MediaManager.Domain\Oland.MediaManager.Domain.csproj", "{A2C9DDDA-CAAC-44B1-9224-3018E849A51B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oland.MediaManager.Application", "src\Oland.MediaManager\Oland.MediaManager.Application\Oland.MediaManager.Application.csproj", "{268326E8-A2BA-49F8-B3EF-AAEDB392D42F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oland.MediaManager.Infrastructure", "src\Oland.MediaManager\Oland.MediaManager.Infrastructure\Oland.MediaManager.Infrastructure.csproj", "{D4309BED-C042-4E06-89A9-7A6DD9B1CA2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,6 +24,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{8B336F3E-163F-465C-A6AE-529F667C990C} = {16E8EDB7-9E45-4C12-9777-E524B620B772}
 		{EB114283-92D1-43FA-B2F1-4B57342745FC} = {34CE6551-66E9-48A6-95C4-D9B0CB2175FD}
+		{C62E594D-54B3-46E0-929C-65FF027FE72E} = {34CE6551-66E9-48A6-95C4-D9B0CB2175FD}
+		{A2C9DDDA-CAAC-44B1-9224-3018E849A51B} = {C62E594D-54B3-46E0-929C-65FF027FE72E}
+		{268326E8-A2BA-49F8-B3EF-AAEDB392D42F} = {C62E594D-54B3-46E0-929C-65FF027FE72E}
+		{D4309BED-C042-4E06-89A9-7A6DD9B1CA2F} = {C62E594D-54B3-46E0-929C-65FF027FE72E}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8B336F3E-163F-465C-A6AE-529F667C990C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -26,5 +38,17 @@ Global
 		{EB114283-92D1-43FA-B2F1-4B57342745FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB114283-92D1-43FA-B2F1-4B57342745FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB114283-92D1-43FA-B2F1-4B57342745FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2C9DDDA-CAAC-44B1-9224-3018E849A51B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2C9DDDA-CAAC-44B1-9224-3018E849A51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2C9DDDA-CAAC-44B1-9224-3018E849A51B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2C9DDDA-CAAC-44B1-9224-3018E849A51B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{268326E8-A2BA-49F8-B3EF-AAEDB392D42F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{268326E8-A2BA-49F8-B3EF-AAEDB392D42F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{268326E8-A2BA-49F8-B3EF-AAEDB392D42F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{268326E8-A2BA-49F8-B3EF-AAEDB392D42F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4309BED-C042-4E06-89A9-7A6DD9B1CA2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4309BED-C042-4E06-89A9-7A6DD9B1CA2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4309BED-C042-4E06-89A9-7A6DD9B1CA2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4309BED-C042-4E06-89A9-7A6DD9B1CA2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

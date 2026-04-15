@@ -83,31 +83,6 @@ public record GroupRequestContext : IRequestContext
     }
 
     /// <summary>
-    /// Деконструирует контекст на отдельные компоненты учётных данных.
-    /// </summary>
-    /// <param name="accessToken">
-    /// Возвращает токен доступа из <see cref="AccessPair"/>, или пустую строку,
-    /// если учётные данные не были явно заданы.
-    /// </param>
-    /// <param name="sessionSecretKey">
-    /// Возвращает секрет сессии из <see cref="AccessPair"/>, или пустую строку,
-    /// если учётные данные не были явно заданы.
-    /// </param>
-    /// <remarks>
-    /// Позволяет использовать паттерн деконструкции для извлечения учётных данных:
-    /// <code>
-    /// var (token, secret) = requestContext;
-    /// </code>
-    /// Если контекст инициализирован без <see cref="AccessPair"/>, возвращаются пустые строки.
-    /// Не сохраняйте извлечённые значения вне контекста выполнения запроса.
-    /// </remarks>
-    public void Deconstruct(out string accessToken, out string sessionSecretKey)
-    {
-        accessToken = AccessPair.AccessToken;
-        sessionSecretKey = AccessPair.SessionSecretKey;
-    }
-
-    /// <summary>
     /// Добавляет идентификатор группы в параметры запроса.
     /// </summary>
     /// <param name="parameters">Исходные параметры запроса типа <see cref="RestParameters"/>.</param>
@@ -125,7 +100,7 @@ public record GroupRequestContext : IRequestContext
     /// <item><description>Подпись запроса (<c>sig</c>) рассчитывается после применения всех параметров на уровне ядра клиента.</description></item>
     /// </list>
     /// </remarks>
-    public RestParameters Apply(RestParameters parameters)
+    public virtual RestParameters Apply(RestParameters parameters)
     {
         return parameters.InsertGroupId(GroupId.Value);
     }

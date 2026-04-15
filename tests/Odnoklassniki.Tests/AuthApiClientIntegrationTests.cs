@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NSubstitute;
+using Oland.Odnoklassniki.Rest.ApiClientCore;
 using Oland.Odnoklassniki.Rest.ApiClients.Auth;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 
@@ -27,7 +29,15 @@ public class AuthApiClientIntegrationTests(OkApiTestFixture fixture) : IClassFix
     public async Task TouchMainSessionAsync_WithValidAppSession_ShouldReturnTrue()
     {
         // Act
-        var result = await _authClient.TouchAccountSessionAsync(new MainAccountRequestContext(), CancellationToken.None);
+        var options = Substitute.For<IOptions<ApplicationOptions>>();
+        options.Value.Returns(new ApplicationOptions()
+        {
+            AccessToken = TestSettings.AccessPair.AccessToken,
+            SessionSecretKey =  TestSettings.AccessPair.SessionSecretKey,
+            ApplicationKey =  TestSettings.ApplicationKey,
+            GroupId = TestSettings.GroupId.Value
+        });
+        var result = await _authClient.TouchAccountSessionAsync(new MainAccountRequestContext(options), CancellationToken.None);
 
         // Assert
         Assert.True(result);

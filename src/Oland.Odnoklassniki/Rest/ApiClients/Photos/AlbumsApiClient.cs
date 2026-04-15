@@ -50,11 +50,9 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
                 break;
         }
 
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
         await okApi.CallAsync(
             SetAlbumMainPhotoMethodName,
-            accessToken,
-            sessionSecretKey,
+            context.AccessPair,
             parameters,
             cancellationToken: cancellationToken);
     }
@@ -80,7 +78,7 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
                 throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
         
-        var response = await okApi.CallAsync<string>(CreateAlbumMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+        var response = await okApi.CallAsync<string>(CreateAlbumMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
         if (response is null)
         {
             throw new OkApiException("Failed to create album", 500);
@@ -109,7 +107,7 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
                 throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
         
-        await okApi.CallAsync<string>(DeleteAlbumMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+        await okApi.CallAsync<string>(DeleteAlbumMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
     }
 
     #region Internal Helpers
@@ -137,7 +135,7 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
                 throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainAccountRequestContext), nameof(FriendRequestContext), nameof(ExplicitTokenRequestContext));
         }
 
-        var response = await okApi.CallAsync<AlbumsResponse>(GetAlbumsMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+        var response = await okApi.CallAsync<AlbumsResponse>(GetAlbumsMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         if (response == null) return null;
 
@@ -182,7 +180,7 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
                 throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
 
-        await okApi.CallAsync(EditAlbumMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+        await okApi.CallAsync(EditAlbumMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -220,7 +218,7 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
                 throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainAccountRequestContext), nameof(FriendRequestContext), nameof(ExplicitTokenRequestContext));
         }
         
-        var response = await okApi.CallAsync<AlbumResponse>(GetAlbumInfoMethodName, context.AccessPair.AccessToken, context.AccessPair.SessionSecretKey, parameters, cancellationToken: cancellationToken);
+        var response = await okApi.CallAsync<AlbumResponse>(GetAlbumInfoMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         if (response?.Album == null) return null;
 

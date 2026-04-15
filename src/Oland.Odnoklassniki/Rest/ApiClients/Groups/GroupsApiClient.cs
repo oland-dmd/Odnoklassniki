@@ -1,10 +1,12 @@
-﻿using Oland.Odnoklassniki.Exceptions;
+﻿using Oland.Odnoklassniki.Common;
+using Oland.Odnoklassniki.Exceptions;
 using Oland.Odnoklassniki.Interfaces;
 using Oland.Odnoklassniki.Interfaces.RestApiClients;
 using Oland.Odnoklassniki.Rest.AnchorNavigators;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Dtos;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Extensions;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Responses;
+using Oland.Odnoklassniki.Rest.BeanFields;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
@@ -15,23 +17,26 @@ namespace Oland.Odnoklassniki.Rest.ApiClients.Groups;
 /// Поддерживает работу как с основным аккаунтом (настроенным в IOkApiClientCore),
 /// так и с произвольными пользовательскими токенами.
 /// </summary>
-public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
+public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext mainContext) : IGroupsApiClient
 {
     private const string OkClassName = "group";
 
     private const string GetInfoMethodName = $"{OkClassName}.getInfo";
 
     /// <inheritdoc />
-    public async Task<ICollection<GroupInfoDto>?> GetGroupsInfoAsync(ICollection<string> groupIds,
+    public async Task<ICollection<T>?> GetGroupsInfoAsync<T>(ICollection<string> groupIds,
         IRequestContext context,
-        CancellationToken cancellationToken = default)
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default) where T: BaseOkDto
     {
         if (groupIds.Count == 0)
             return [];
+        
+        fields ??= [GroupBeanFields.Name, GroupBeanFields.Uid, GroupBeanFields.AddPhotoAlbumAllowed];
 
         var parameters = new RestParameters()
             .InsertGroups(groupIds)
-            .InsertFields("name", "uid", "ADD_PHOTOALBUM_ALLOWED");
+            .InsertFields(fields.ToArray());
 
         switch (context)
         {
@@ -42,12 +47,10 @@ public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
                 throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
 
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
-        var response = await okApi.CallAsync<GroupInfoResponse[]>(
-            GetInfoMethodName, accessToken, sessionSecretKey, parameters, cancellationToken: cancellationToken);
+        var response = await okApi.CallAsync<T[]>(
+            GetInfoMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
-        return response?.Select(r => new GroupInfoDto { Id = r.Id, Name = r.Name, AddAlbumAllowed = r.Attributes?.Flags.Contains("ap") ?? false }).ToArray();
+        return response;
     }
 
     private const string GetUserGroupsByIdsMethodName = $"{OkClassName}.getUserGroupsByIds";
@@ -66,7 +69,7 @@ public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
             .InsertRootGroupId(groupId.Value);
 
         var response = await okApi.CallAsync<ICollection<GroupUserInfoResponse>>(
-            GetUserGroupsByIdsMethodName, parameters: parameters, cancellationToken: cancellationToken);
+            GetUserGroupsByIdsMethodName, mainContext.AccessPair, parameters: parameters, cancellationToken: cancellationToken);
 
         return response?.Select(item => new GroupUserInfoDto
         {
@@ -106,12 +109,9 @@ public class GroupsApiClient(IOkApiClientCore okApi) : IGroupsApiClient
                 throw new UnexpectedRequestContext(context, nameof(MainAccountRequestContext), nameof(ExplicitTokenRequestContext));
         }
 
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
         var response = await okApi.CallAsync<UserGroupsResponse>(
             GetUserGroupsV2MethodName,
-            accessToken,
-            sessionSecretKey,
+            context.AccessPair,
             parameters,
             cancellationToken: cancellationToken);
 

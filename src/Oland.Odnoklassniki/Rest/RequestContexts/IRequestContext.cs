@@ -40,28 +40,6 @@ public interface IRequestContext
     AccessPair AccessPair { get; }
 
     /// <summary>
-    /// Деконструирует контекст на отдельные компоненты учётных данных для использования
-    /// в паттернах декомпозиции и извлечения значений.
-    /// </summary>
-    /// <param name="accessToken">
-    /// Возвращает токен доступа из <see cref="AccessPair"/>.
-    /// Если учётные данные не заданы, возвращает пустую строку.
-    /// </param>
-    /// <param name="sessionSecretKey">
-    /// Возвращает секрет сессии из <see cref="AccessPair"/>.
-    /// Если учётные данные не заданы, возвращает пустую строку.
-    /// </param>
-    /// <remarks>
-    /// Позволяет использовать синтаксис деконструкции для удобного извлечения данных:
-    /// <code>
-    /// var (token, secret) = requestContext;
-    /// </code>
-    /// Возвращаемые значения являются чувствительными — не сохраняйте их вне времени жизни запроса
-    /// и не передавайте в системы логирования или мониторинга.
-    /// </remarks>
-    void Deconstruct(out string accessToken, out string sessionSecretKey);
-
-    /// <summary>
     /// Применяет контекст к параметрам запроса, добавляя специфичные для сценария значения.
     /// </summary>
     /// <param name="parameters">Исходные параметры запроса типа <see cref="RestParameters"/>.</param>

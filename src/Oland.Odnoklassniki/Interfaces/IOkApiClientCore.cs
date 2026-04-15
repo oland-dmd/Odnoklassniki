@@ -1,4 +1,5 @@
 ﻿using Oland.Odnoklassniki.Rest;
+using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
 namespace Oland.Odnoklassniki.Interfaces;
 
@@ -28,16 +29,7 @@ public interface IOkApiClientCore
     /// Полное имя метода API в формате <c>namespace.method</c> (например, <c>"users.getCurrentUser"</c>, <c>"auth.touchSession"</c>).
     /// Обязательный параметр. Регистр символов должен точно соответствовать документации OK.ru.
     /// </param>
-    /// <param name="accessToken">
-    /// OAuth-токен пользователя. Обязателен для методов, требующих авторизации от имени пользователя.
-    /// Если передана пустая строка или <see langword="null"/>, запрос выполняется в контексте приложения
-    /// с использованием <c>application_secret</c> из настроек.
-    /// </param>
-    /// <param name="secret">
-    /// Секретный ключ сессии (<c>session_secret_key</c>), полученный при авторизации.
-    /// Используется для расчёта подписи. Если не указан, применяется <c>application_secret</c>.
-    /// Не передавайте этот параметр в логах или ответах клиенту — он является конфиденциальным.
-    /// </param>
+    /// <param name="accessPair">Пара access token и session secret key для доступа к аккаунту и расчёта подписи.</param>
     /// <param name="parameters">
     /// Дополнительные параметры метода API (например, <c>uids</c>, <c>fields</c>, <c>count</c>).
     /// Передаются как коллекция <c>ключ → значение</c>. Может быть <see langword="null"/> для запросов без параметров.
@@ -76,8 +68,7 @@ public interface IOkApiClientCore
     /// </exception>
     Task<T?> CallAsync<T>(
         string methodName,
-        string accessToken = "",
-        string secret = "",
+        AccessPair accessPair,
         RestParameters? parameters = null,
         bool? markOnline = false,
         CancellationToken cancellationToken = default);
@@ -88,13 +79,7 @@ public interface IOkApiClientCore
     /// <param name="methodName">
     /// Полное имя метода API в формате <c>namespace.method</c>. Обязательный параметр.
     /// </param>
-    /// <param name="accessToken">
-    /// OAuth-токен пользователя. Необязателен для публичных методов.
-    /// При отсутствии запрос выполняется в режиме приложения.
-    /// </param>
-    /// <param name="secret">
-    /// Секретный ключ сессии для расчёта подписи. При отсутствии используется <c>application_secret</c>.
-    /// </param>
+    /// <param name="accessPair">Пара access token и session secret key для доступа к аккаунту и расчёта подписи.</param>
     /// <param name="parameters">Дополнительные параметры запроса. Может быть <see langword="null"/>.</param>
     /// <param name="markOnline">
     /// Флаг отметки пользователя как «онлайн». Добавляет параметр <c>__online</c> в запрос.
@@ -118,8 +103,7 @@ public interface IOkApiClientCore
     /// </exception>
     Task<string?> CallAsync(
         string methodName,
-        string accessToken = "",
-        string secret = "",
+        AccessPair accessPair,
         RestParameters? parameters = null,
         bool? markOnline = false,
         CancellationToken cancellationToken = default);

@@ -1,4 +1,6 @@
-﻿using Oland.Odnoklassniki.Interfaces;
+﻿using Microsoft.Extensions.Options;
+using Oland.Odnoklassniki.Interfaces;
+using Oland.Odnoklassniki.Rest.ApiClientCore;
 using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
 namespace Oland.Odnoklassniki.Rest.RequestContexts;
@@ -18,8 +20,33 @@ namespace Oland.Odnoklassniki.Rest.RequestContexts;
 /// <item><description>Не используйте в многопользовательских сценариях — для них предназначен <see cref="ExplicitTokenRequestContext"/>.</description></item>
 /// </list>
 /// </remarks>
-public record MainAccountRequestContext() : IRequestContext
+public record MainAccountRequestContext : IRequestContext
 {
+    /// <summary>
+    /// Контекст запроса для работы с основным аккаунтом, настроенным в ядре клиента <see cref="IOkApiClientCore"/>.
+    /// Реализует <see cref="IRequestContext"/> и используется для выполнения запросов с использованием
+    /// глобальных учётных данных приложения или основной пользовательской сессии.
+    /// </summary>
+    /// <remarks>
+    /// Данный контекст применяется в сценариях, когда не требуется явная передача токенов для каждого запроса —
+    /// учётные данные берутся из конфигурации клиента при его инициализации.
+    /// <list type="bullet">
+    /// <item><description>Свойство <see cref="AccessPair"/> содержит пустые значения — фактические токены подставляются на уровне ядра клиента.</description></item>
+    /// <item><description>Метод <see cref="Apply"/> не модифицирует параметры запроса — используется стандартный набор параметров.</description></item>
+    /// <item><description>Подходит для однопользовательских приложений или сервисов с единой учётной записью.</description></item>
+    /// <item><description>Не используйте в многопользовательских сценариях — для них предназначен <see cref="ExplicitTokenRequestContext"/>.</description></item>
+    /// </list>
+    /// </remarks>
+    public MainAccountRequestContext(IOptions<ApplicationOptions> Options)
+    {
+        this.Options = Options;
+        AccessPair = new AccessPair
+        {
+            AccessToken = Options.Value.AccessToken,
+            SessionSecretKey = Options.Value.SessionSecretKey,
+        };
+    }
+
     /// <summary>
     /// Пара учётных данных для авторизации запроса. В данной реализации содержит пустые значения.
     /// </summary>
@@ -34,36 +61,9 @@ public record MainAccountRequestContext() : IRequestContext
     /// <item><description>При необходимости явной передачи токенов используйте <see cref="ExplicitTokenRequestContext"/>.</description></item>
     /// </list>
     /// </remarks>
-    public AccessPair AccessPair { get; } = new()
-    {
-        AccessToken = "",
-        SessionSecretKey = "",
-    };
+    public AccessPair AccessPair { get; }
 
-    /// <summary>
-    /// Деконструирует контекст на отдельные компоненты учётных данных.
-    /// </summary>
-    /// <param name="accessToken">
-    /// Возвращает пустую строку, так как токен извлекается из конфигурации ядра клиента,
-    /// а не из свойств данного контекста.
-    /// </param>
-    /// <param name="sessionSecretKey">
-    /// Возвращает пустую строку, так как секрет сессии извлекается из конфигурации ядра клиента,
-    /// а не из свойств данного контекста.
-    /// </param>
-    /// <remarks>
-    /// Метод реализует контракт <see cref="IRequestContext.Deconstruct"/> для совместимости
-    /// с другими типами контекстов. В случае <see cref="MainAccountRequestContext"/> возвращаемые
-    /// значения не содержат фактических учётных данных — они подставляются на уровне <see cref="IOkApiClientCore"/>.
-    /// <code>
-    /// var (token, secret) = requestContext; // token и secret будут пустыми строками
-    /// </code>
-    /// </remarks>
-    public void Deconstruct(out string accessToken, out string sessionSecretKey)
-    {
-        accessToken = AccessPair.AccessToken;
-        sessionSecretKey = AccessPair.SessionSecretKey;
-    }
+    public IOptions<ApplicationOptions> Options { get; init; }
 
     /// <summary>
     /// Применяет контекст к параметрам запроса. В данной реализации не модифицирует входные данные.

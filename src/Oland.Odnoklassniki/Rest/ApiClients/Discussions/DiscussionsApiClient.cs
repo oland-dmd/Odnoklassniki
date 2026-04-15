@@ -54,10 +54,8 @@ public class DiscussionsApiClient(IOkApiClientCore okApi, ILogger<DiscussionsApi
             .InsertCustomParameter("mark_as_read", true)
             .InsertCustomParameter("includeRemoved", true);
         
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
         var response = await okApi.CallAsync<CommentResponse>(
-            GetCommentsMethodName, accessToken, sessionSecretKey, parameters, cancellationToken: cancellationToken);
+            GetCommentsMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         return response.Comments.Select(item => new CommentData
         {
@@ -86,8 +84,6 @@ public class DiscussionsApiClient(IOkApiClientCore okApi, ILogger<DiscussionsApi
         int count,
         CancellationToken cancellationToken)
     {
-        context.Deconstruct(out var accessToken, out var sessionSecretKey);
-        
         var parameters = new RestParameters()
             .InsertFields(
                 "discussion.OBJECT_TYPE", "discussion.OBJECT_ID", "discussion.NEW_COMMENTS_COUNT",
@@ -96,7 +92,7 @@ public class DiscussionsApiClient(IOkApiClientCore okApi, ILogger<DiscussionsApi
             .InsertCustomParameter("category", category);
 
         var response = await okApi.CallAsync<DiscussionResponse>(
-            GetListMethodName, accessToken, sessionSecretKey, parameters, cancellationToken: cancellationToken);
+            GetListMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
         return response.Discussions.Select(item =>
             new DiscussionData

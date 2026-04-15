@@ -1,5 +1,7 @@
-﻿using Oland.Odnoklassniki.Rest.AnchorNavigators;
+﻿using Oland.Odnoklassniki.Common;
+using Oland.Odnoklassniki.Rest.AnchorNavigators;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups.Dtos;
+using Oland.Odnoklassniki.Rest.BeanFields;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
@@ -19,6 +21,7 @@ public interface IGroupsApiClient
     /// </summary>
     /// <param name="groupIds">Коллекция идентификаторов групп в формате OK.ru (строковые числовые значения).</param>
     /// <param name="context">Контекст запроса, содержащий данные аутентификации и авторизации.</param>
+    /// <param name="fields">Добавление полей из <see cref="GroupBeanFields"/></param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>
     /// Коллекция объектов <see cref="GroupInfoDto"/> с данными о запрошенных группах,
@@ -33,10 +36,11 @@ public interface IGroupsApiClient
     /// <item><description>При ошибке аутентификации или превышении частоты запросов выбрасывается соответствующее исключение.</description></item>
     /// </list>
     /// </remarks>
-    Task<ICollection<GroupInfoDto>?> GetGroupsInfoAsync(
+    Task<ICollection<T>?> GetGroupsInfoAsync<T>(
         ICollection<string> groupIds,
         IRequestContext context,
-        CancellationToken cancellationToken = default);
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default) where T : BaseOkDto;
 
     /// <summary>
     /// Получает информацию о статусе членства указанных пользователей в заданной группе.
