@@ -4,8 +4,6 @@ namespace Oland.MediaManager.Domain.MediaItems.Text;
 
 public class ProductMedia : MediaItem
 {
-    public override string Type => "product";
-    
     [JsonPropertyName("price")]
     public decimal Price { get; set; }
     

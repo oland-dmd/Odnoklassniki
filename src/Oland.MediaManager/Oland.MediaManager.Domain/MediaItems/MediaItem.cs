@@ -23,5 +23,4 @@ namespace Oland.MediaManager.Domain.MediaItems;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 public abstract class MediaItem
 {
-    [JsonPropertyName("type")] public abstract string Type { get; }
 }

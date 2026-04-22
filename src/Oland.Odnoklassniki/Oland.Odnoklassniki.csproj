@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <PackageId>Oland.Odnoklassniki</PackageId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.0.4</Version>
+    <Version>1.0.6</Version>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <Product>Oland.Odnoklassniki</Product>
@@ -54,6 +54,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Oland.MediaManager\Oland.MediaManager.Application\Oland.MediaManager.Application.csproj" PrivateAssets="All"/>
     <ProjectReference Include="..\Oland.MediaManager\Oland.MediaManager.Infrastructure\Oland.MediaManager.Infrastructure.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\Oland.MediaManager\Oland.MediaManager.Domain\Oland.MediaManager.Domain.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <PropertyGroup>
