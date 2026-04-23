@@ -86,7 +86,7 @@ internal class PhotosResponse
     /// для ответов с пагинацией, но может быть пустой строкой для первой страницы.
     /// </value>
     [JsonPropertyName("anchor")]
-    public required string Anchor { get; init; }
+    public string? Anchor { get; init; }
 
     /// <summary>
     /// Флаг наличия дополнительных страниц с фотографиями.

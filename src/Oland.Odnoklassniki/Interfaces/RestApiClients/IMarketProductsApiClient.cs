@@ -105,7 +105,6 @@ public interface IMarketProductsApiClient
     /// <param name="context">
     /// Контекст выполнения запроса. Допустимы только пользовательские контексты:
     /// <see cref="MainAccountRequestContext"/> или <see cref="ExplicitTokenRequestContext"/>.
-    /// Удаление товаров группы выполняется через другие методы управления каталогами.
     /// </param>
     /// <param name="cancellationToken">Токен отмены асинхронной операции.</param>
     /// <returns>

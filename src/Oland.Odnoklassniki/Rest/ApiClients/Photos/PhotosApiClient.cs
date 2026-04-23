@@ -88,18 +88,18 @@ public class PhotosApiClient(IOkApiClientCore okApi) : IPhotosApiClient
         var response = await okApi.CallAsync<PhotosResponse>(
             GetPhotosMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
-        return new AnchorResponse<PhotoData>()
+        return new AnchorResponse<PhotoData>
         {
-            Anchor = response.Anchor,
-            HasMore = response.HasMore,
-            TotalCount = response.TotalCount,
-            Results = response.Photos.Select(item => new PhotoData
+            Anchor = response?.Anchor ?? string.Empty,
+            HasMore = response?.HasMore ?? false,
+            TotalCount = response?.TotalCount ?? 0,
+            Results = response?.Photos.Select(item => new PhotoData
             {
                 Id = item.Id,
                 PicMax = item.PicMax,
                 Text = item.Text,
                 UserId = item.UserId,
-            }).ToArray()
+            }).ToArray() ?? []
         };
     }
 
