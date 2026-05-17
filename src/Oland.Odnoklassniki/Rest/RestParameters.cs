@@ -1,4 +1,5 @@
 ﻿using Oland.Odnoklassniki.Enums;
+using Oland.Odnoklassniki.Rest.ApiClients.MediaTopics.Enums;
 
 namespace Oland.Odnoklassniki.Rest;
 
@@ -239,6 +240,23 @@ public class RestParameters
         if (!string.IsNullOrEmpty(photoId))
         {
             _parameters["photo_id"] = photoId;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет список идентификаторов фотографий (параметр <c>photo_ids</c>).
+    /// Используется в пакетных запросах <c>photos.getInfo</c>.
+    /// </summary>
+    /// <param name="photoIds">Идентификаторы фотографий. Пропускается при пустой коллекции.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertPhotoIds(IEnumerable<string> photoIds)
+    {
+        var list = photoIds?.ToList();
+        if (list is { Count: > 0 })
+        {
+            _parameters["photo_ids"] = string.Join(',', list);
         }
 
         return this;
@@ -550,6 +568,480 @@ public class RestParameters
         }
 
         _parameters["aid"] = albumId;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор пользователя в параметры запроса.
+    /// </summary>
+    /// <param name="uid">Идентификатор пользователя. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertUserId(string uid)
+    {
+        if (!string.IsNullOrEmpty(uid))
+        {
+            _parameters["uid"] = uid;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет список идентификаторов пользователей (параметр <c>uids</c>).
+    /// </summary>
+    /// <param name="uids">Перечисление идентификаторов. Пропускается при пустой коллекции.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertUserIds(IEnumerable<string> uids)
+    {
+        var list = uids?.ToList();
+        if (list is { Count: > 0 })
+        {
+            _parameters["uids"] = string.Join(',', list);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор топика медиа (параметр <c>topic_id</c>).
+    /// </summary>
+    /// <param name="topicId">Идентификатор топика. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertTopicId(string topicId)
+    {
+        if (!string.IsNullOrEmpty(topicId))
+        {
+            _parameters["topic_id"] = topicId;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор и тип обсуждения (параметры <c>discussionId</c> и <c>discussionType</c>).
+    /// </summary>
+    /// <param name="id">Идентификатор обсуждения.</param>
+    /// <param name="type">Тип обсуждения (например, <c>GROUP_TOPIC</c>).</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertDiscussionId(string id, string type)
+    {
+        if (!string.IsNullOrEmpty(id))
+        {
+            _parameters["discussionId"] = id;
+        }
+
+        if (!string.IsNullOrEmpty(type))
+        {
+            _parameters["discussionType"] = type;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор и тип сущности (параметры <c>entityId</c> и <c>entityType</c>).
+    /// Используется в методах <c>discussions.getDiscussionComments</c> и <c>discussions.getDiscussionCommentsCount</c>.
+    /// </summary>
+    /// <param name="id">Идентификатор сущности.</param>
+    /// <param name="type">Тип сущности (например, <c>GROUP_TOPIC</c>).</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertEntityId(string id, string type)
+    {
+        if (!string.IsNullOrEmpty(id))
+            _parameters["entityId"] = id;
+
+        if (!string.IsNullOrEmpty(type))
+            _parameters["entityType"] = type;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор комментария (параметр <c>comment_id</c>).
+    /// Используется в методах <c>discussions.getComment</c> и <c>discussions.getCommentLikes</c>.
+    /// </summary>
+    /// <param name="commentId">Идентификатор комментария. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertCommentId(string commentId)
+    {
+        if (!string.IsNullOrEmpty(commentId))
+            _parameters["comment_id"] = commentId;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет список идентификаторов вложений (параметр <c>attach_ids</c>, CSV).
+    /// Используется в методе <c>discussions.getAttachedResources</c>.
+    /// </summary>
+    /// <param name="attachIds">Коллекция идентификаторов вложений.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertAttachIds(ICollection<string> attachIds)
+    {
+        if (attachIds?.Count > 0)
+            _parameters["attach_ids"] = string.Join(",", attachIds);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет смещение для offset-пагинации (параметр <c>offset</c>).
+    /// Используется в методах <c>discussions.getDiscussionComments</c> и <c>discussions.getDiscussions</c>.
+    /// </summary>
+    /// <param name="offset">Смещение (0 и более).</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertOffset(int offset)
+    {
+        if (offset > 0)
+            _parameters["offset"] = offset;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор видео (параметр <c>video_id</c>).
+    /// </summary>
+    /// <param name="videoId">Идентификатор видео. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertVideoId(string videoId)
+    {
+        if (!string.IsNullOrEmpty(videoId))
+        {
+            _parameters["video_id"] = videoId;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет одноразовый токен удаления из ленты (параметр <c>delete_id</c>).
+    /// Токен получается из поля <c>delete_id</c> при запросе топика через <c>mediatopic.getByIds</c>.
+    /// </summary>
+    /// <param name="deleteId">Одноразовый токен. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertDeleteId(string deleteId)
+    {
+        if (!string.IsNullOrEmpty(deleteId))
+        {
+            _parameters["delete_id"] = deleteId;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет одноразовый токен для пометки записи как спам (параметр <c>mark_as_spam_id</c>).
+    /// Токен получается из поля <c>mark_as_spam_id</c> при запросе топика через <c>mediatopic.getByIds</c>.
+    /// </summary>
+    /// <param name="markAsSpamId">Одноразовый токен. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertMarkAsSpamId(string markAsSpamId)
+    {
+        if (!string.IsNullOrEmpty(markAsSpamId))
+        {
+            _parameters["mark_as_spam_id"] = markAsSpamId;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет произвольный текст в параметры запроса (параметр <c>text</c>).
+    /// Используется для содержимого уведомлений и т.п.
+    /// Отличие от <c>InsertDescription</c> (описание сущности) и <c>InsertName</c> (имя сущности):
+    /// <c>InsertText</c> — текстовое сообщение для отображения пользователю.
+    /// </summary>
+    /// <param name="text">Текст сообщения. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertText(string text)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            _parameters["text"] = text;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет URL-адрес (параметр <c>url</c>). Используется в <c>share.fetchLinkV2</c>.
+    /// </summary>
+    /// <param name="url">URL-адрес. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertUrl(string url)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+            _parameters["url"] = url;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет флаг публикации от имени группы (параметр <c>onBehalfOfGroup</c>, camelCase).
+    /// Актуален только для группового контекста.
+    /// </summary>
+    /// <param name="value">Значение флага.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertOnBehalfOfGroup(bool value)
+    {
+        _parameters["onBehalfOfGroup"] = value.ToString().ToLowerInvariant();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет время отложенной публикации (параметр <c>publishAt</c>).
+    /// Формат: <c>yyyy-MM-dd HH:mm:ss</c> по московскому времени.
+    /// </summary>
+    /// <param name="publishAt">Дата и время публикации (московское время).</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertPublishAt(DateTime publishAt)
+    {
+        _parameters["publishAt"] = publishAt.ToString("yyyy-MM-dd HH:mm:ss");
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет флаг отключения комментариев (параметр <c>disableComments</c>, camelCase).
+    /// </summary>
+    /// <param name="value">Значение флага.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertDisableComments(bool value)
+    {
+        _parameters["disableComments"] = value.ToString().ToLowerInvariant();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет флаг скрытой публикации (параметр <c>hidden_post</c>, snake_case по API OK).
+    /// </summary>
+    /// <param name="value">Значение флага.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertHiddenPost(bool value)
+    {
+        _parameters["hidden_post"] = value.ToString().ToLowerInvariant();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет флаг предпросмотра ссылок (параметр <c>text_link_preview</c>, snake_case по API OK).
+    /// </summary>
+    /// <param name="value">Значение флага.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertTextLinkPreview(bool value)
+    {
+        _parameters["text_link_preview"] = value.ToString().ToLowerInvariant();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет флаг установки статуса пользователя (параметр <c>set_status</c>, snake_case по требованию OK API).
+    /// </summary>
+    /// <param name="value">Значение флага.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertSetStatus(bool value)
+    {
+        _parameters["set_status"] = value.ToString().ToLowerInvariant();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет тип медиатопика (параметр <c>type</c>).
+    /// </summary>
+    /// <param name="type">Тип владельца медиатопика.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertMediaTopicType(MediaTopicOwnerType type)
+    {
+        _parameters["type"] = type.ToString();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет локаль для локализованных ответов (параметр <c>locale</c>).
+    /// Пример: <c>ru</c>, <c>en</c>.
+    /// </summary>
+    /// <param name="locale">Код локали. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertLocale(string locale)
+    {
+        if (!string.IsNullOrEmpty(locale))
+        {
+            _parameters["locale"] = locale;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет нижнюю границу диапазона статистики в миллисекундах (параметр <c>from_ms</c>).
+    /// Используется в методах <c>group.getStat*</c>.
+    /// </summary>
+    /// <param name="fromMs">Метка времени начала периода в мс (Unix epoch).</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertFromMs(long fromMs)
+    {
+        _parameters["from_ms"] = fromMs;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет верхнюю границу диапазона статистики в миллисекундах (параметр <c>to_ms</c>).
+    /// Используется в методах <c>group.getStat*</c>.
+    /// </summary>
+    /// <param name="toMs">Метка времени конца периода в мс (Unix epoch).</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertToMs(long toMs)
+    {
+        _parameters["to_ms"] = toMs;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет фильтр по статусам участников (параметр <c>statuses</c>, CSV).
+    /// Используется в методе <c>group.getMembers</c>.
+    /// </summary>
+    /// <param name="statuses">Список статусов для фильтрации. Пропускается при пустой коллекции.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertStatuses(IEnumerable<string> statuses)
+    {
+        var list = statuses?.ToList();
+        if (list is { Count: > 0 })
+        {
+            _parameters["statuses"] = string.Join(',', list);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет типы счётчиков для запроса (параметр <c>counterTypes</c>, CSV).
+    /// Используется в методе <c>group.getCounters</c>.
+    /// Допустимые значения: <c>MEMBERS</c>, <c>TOPICS</c>, <c>PHOTOS</c>, <c>VIDEOS</c>, <c>ALBUMS</c>, <c>LIKES</c> и др.
+    /// </summary>
+    /// <param name="counterTypes">Список типов счётчиков. Пропускается при пустой коллекции.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertCounterTypes(IEnumerable<string> counterTypes)
+    {
+        var list = counterTypes?.ToList();
+        if (list is { Count: > 0 })
+        {
+            _parameters["counterTypes"] = string.Join(',', list);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет начало временного диапазона в миллисекундах Unix epoch (параметр <c>start_time</c>).
+    /// Используется в методах <c>group.getStatTopics</c>, <c>group.getStatTrends</c>.
+    /// </summary>
+    /// <param name="startTime">Метка начала диапазона в мс.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertStartTime(long startTime)
+    {
+        _parameters["start_time"] = startTime;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет конец временного диапазона в миллисекундах Unix epoch (параметр <c>end_time</c>).
+    /// Используется в методах <c>group.getStatTopics</c>, <c>group.getStatTrends</c>.
+    /// </summary>
+    /// <param name="endTime">Метка конца диапазона в мс.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertEndTime(long endTime)
+    {
+        _parameters["end_time"] = endTime;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет одноразовый токен закрепления записи в ленте группы (параметр <c>pin_id</c>).
+    /// Токен получается из поля <c>pin_id</c> при запросе топика через <c>mediatopic.getByIds</c>.
+    /// </summary>
+    /// <param name="pinId">Одноразовый токен. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertPinId(string pinId)
+    {
+        if (!string.IsNullOrEmpty(pinId))
+        {
+            _parameters["pin_id"] = pinId;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор загруженного видеоролика (параметр <c>vid</c>).
+    /// Используется в методах <c>video.update</c>, <c>video.delete</c>.
+    /// Отличается от <see cref="InsertVideoId"/> (<c>video_id</c> для медиатопиков): здесь используется ключ <c>vid</c>.
+    /// </summary>
+    /// <param name="vid">Идентификатор видеоролика. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertVid(string vid)
+    {
+        if (!string.IsNullOrEmpty(vid))
+        {
+            _parameters["vid"] = vid;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет имя загружаемого файла (параметр <c>file_name</c>).
+    /// Используется в методе <c>video.getUploadUrl</c>.
+    /// </summary>
+    /// <param name="fileName">Имя файла. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertFileName(string fileName)
+    {
+        if (!string.IsNullOrEmpty(fileName))
+        {
+            _parameters["file_name"] = fileName;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет размер загружаемого файла в байтах (параметр <c>file_size</c>).
+    /// Используется в методе <c>video.getUploadUrl</c>. Может быть 0, если размер неизвестен заранее.
+    /// </summary>
+    /// <param name="fileSize">Размер файла в байтах (допустимо 0 при неизвестном размере).</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertFileSize(long fileSize)
+    {
+        _parameters["file_size"] = fileSize;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Добавляет идентификатор канала (параметр <c>cid</c>).
+    /// Используется в методах <c>video.subscribe</c> и <c>video.getUploadUrl</c>.
+    /// </summary>
+    /// <param name="channelId">Идентификатор канала. Пропускается при пустом значении.</param>
+    /// <returns>Текущий экземпляр для цепочки вызовов.</returns>
+    public RestParameters InsertChannelId(string channelId)
+    {
+        if (!string.IsNullOrEmpty(channelId))
+        {
+            _parameters["cid"] = channelId;
+        }
 
         return this;
     }

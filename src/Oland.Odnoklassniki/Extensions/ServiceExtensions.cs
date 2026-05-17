@@ -8,8 +8,12 @@ using Oland.Odnoklassniki.Rest.ApiClients.Auth;
 using Oland.Odnoklassniki.Rest.ApiClients.Discussions;
 using Oland.Odnoklassniki.Rest.ApiClients.Friends;
 using Oland.Odnoklassniki.Rest.ApiClients.Groups;
+using Oland.Odnoklassniki.Rest.ApiClients.MediaTopics;
 using Oland.Odnoklassniki.Rest.ApiClients.Photos;
+using Oland.Odnoklassniki.Rest.ApiClients.Stream;
 using Oland.Odnoklassniki.Rest.ApiClients.PhotosV2;
+using Oland.Odnoklassniki.Rest.ApiClients.Share;
+using Oland.Odnoklassniki.Rest.ApiClients.Video;
 using Oland.Odnoklassniki.Rest.ApiClients.Users;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 
@@ -58,6 +62,10 @@ public static class ServiceExtensions
     /// <item><see cref="IUserApiClient"/> — информация о пользователях;</item>
     /// <item><see cref="IFriendsApiClient"/> — управление списком друзей;</item>
     /// <item><see cref="IGroupsApiClient"/> — управление группами;</item>
+    /// <item><see cref="IMediaTopicsApiClient"/> — публикация и управление медиатопиками (посты, статусы, темы групп);</item>
+    /// <item><see cref="IStreamApiClient"/> — управление лентой пользователя (удаление, пометка как спам, проверка подписки);</item>
+    /// <item><see cref="IVideoApiClient"/> — работа с видеороликами (загрузка URL, обновление, удаление, подписка на канал);</item>
+    /// <item><see cref="IShareApiClient"/> — получение информации о внешних ссылках для публикации в медиатопике;</item>
     /// <item><see cref="ImageClient"/> — клиент для загрузки и обработки изображений.</item>
     /// </list>
     /// </remarks>
@@ -85,6 +93,10 @@ public static class ServiceExtensions
             .AddScoped<IUserApiClient, UserApiClient>()
             .AddScoped<IFriendsApiClient, FriendsApiClient>()
             .AddScoped<IGroupsApiClient, GroupsApiClient>()
+            .AddScoped<IMediaTopicsApiClient, MediaTopicsApiClient>()
+            .AddScoped<IStreamApiClient, StreamApiClient>()
+            .AddScoped<IVideoApiClient, VideoApiClient>()
+            .AddScoped<IShareApiClient, ShareApiClient>()
             .AddScoped<ImageClient>()
             .AddScoped<MainAccountRequestContext>()
             .AddScoped<MainGroupRequestContext>();

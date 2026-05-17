@@ -56,44 +56,44 @@ public static class TestSettings
     /// Идентификатор корпоративной группы в OK.ru, в которую публикуются авиационные уведомления.
     /// Формат: строковое представление числового ID группы.
     /// </summary>
-    public static readonly GroupId GroupId = new("");
+    public static readonly GroupId GroupId = new("70000000729023");
 
     /// <summary>
     /// Идентификатор альбома группы для размещения медиафайлов общего назначения (схемы, отчёты).
     /// Используется при загрузке вложений через метод публикации.
     /// </summary>
-    public const string GroupAlbumId = "";
+    public const string GroupAlbumId = "975987041983";
 
     /// <summary>
     /// Идентификатор фотоальбома группы для публикации изображений (фото ВПП, метеорадары, инфографика).
     /// </summary>
-    public const string GroupPhotoAlbumId = "";
+    public const string GroupPhotoAlbumId = "5375839517119";
 
     /// <summary>
     /// Идентификатор личного альбома пользователя-оператора для тестовой публикации перед отправкой в группу.
     /// </summary>
-    public const string UserAlbumId = "";
+    public const string UserAlbumId = "944733134271";
 
     /// <summary>
     /// Идентификатор тестового фото в личном альбоме пользователя. Используется в интеграционных тестах.
     /// </summary>
-    public const string UserAlbumPhotoId = "";
+    public const string UserAlbumPhotoId = "944733163455";
 
     /// <summary>
     /// Идентификатор альбома друга/партнёра для кросс-публикации согласованного контента (при наличии прав).
     /// </summary>
-    public const string FriendAlbumId = "";
+    public const string FriendAlbumId = "939034467047";
 
     /// <summary>
     /// Идентификатор друга/партнёра в системе OK.ru для операций, требующих указания целевого пользователя.
     /// </summary>
-    public static readonly FriendId FriendId = new("");
+    public static readonly FriendId FriendId = new("577303695079");
 
     /// <summary>
     /// Идентификатор обсуждения (темы) в группе для публикации текстовых уведомлений и комментариев.
     /// Используется при отправке структурированных сообщений (NOTAM, метео-предупреждения).
     /// </summary>
-    public const string DiscussionId = "";
+    public const string DiscussionId = "945364069055";
 
     /// <summary>
     /// Проверяет наличие всех обязательных учётных данных для инициализации клиента OK.ru API.
@@ -111,5 +111,5 @@ public static class TestSettings
         !string.IsNullOrEmpty(ApplicationSecret) &&
         !string.IsNullOrEmpty(UserAccessToken);
 
-    public static readonly CatalogId CatalogId = new("");
+    public static readonly CatalogId CatalogId = new("157269177595327");
 }

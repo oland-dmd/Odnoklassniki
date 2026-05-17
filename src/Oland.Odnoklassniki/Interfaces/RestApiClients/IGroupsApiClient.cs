@@ -7,6 +7,7 @@ using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
 
 namespace Oland.Odnoklassniki.Interfaces.RestApiClients;
 
+
 /// <summary>
 /// Клиент для работы с группами в социальной сети Одноклассники (OK.ru).
 /// Предоставляет методы для получения информации о группах, проверки членства пользователей
@@ -88,5 +89,171 @@ public interface IGroupsApiClient
     AnchorNavigator<UserGroupDto> GetUserGroupsAnchorNavigator(
         IRequestContext context,
         AnchorConfiguration anchorConfiguration,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Возвращает навигатор для постраничного перебора участников группы.
+    /// Соответствует методу <c>group.getMembers</c>.
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ Параметр идентификатора группы передаётся как <c>uid</c> (нестандартно для этого метода API).
+    /// Поддерживает фильтрацию по статусу участника через <paramref name="statusFilter"/>.
+    /// </remarks>
+    /// <param name="context">Контекст запроса: <see cref="GroupRequestContext"/> или <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="cfg">Настройки курсорной пагинации.</param>
+    /// <param name="statusFilter">Необязательный фильтр по статусу участника.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Навигатор <see cref="AnchorNavigator{GroupMemberDto}"/> по списку участников.</returns>
+    AnchorNavigator<GroupMemberDto> GetMembersNavigator(
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        GroupMemberStatusFilter? statusFilter = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает счётчики группы (участники, фото, видео и т.д.).
+    /// Соответствует методу <c>group.getCounters</c>.
+    /// </summary>
+    /// <param name="context">Контекст запроса: <see cref="GroupRequestContext"/> или <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="counterTypes">
+    /// Список типов запрашиваемых счётчиков (например, <c>MEMBERS</c>, <c>PHOTOS</c>).
+    /// При <see langword="null"/> сервер возвращает счётчики по умолчанию.
+    /// </param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Объект <see cref="GroupCountersDto"/> со значениями счётчиков, или <see langword="null"/>.</returns>
+    Task<GroupCountersDto?> GetCountersAsync(
+        IRequestContext context,
+        IEnumerable<string>? counterTypes = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает сводную статистику группы за период.
+    /// Соответствует методу <c>group.getStatOverview</c>.
+    /// </summary>
+    /// <remarks>Требует прав администратора группы и scope <c>GROUP_CONTENT</c>.</remarks>
+    /// <param name="context">Контекст запроса: только <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="period">Тип периода агрегации (WEEK или MONTH). При <see langword="null"/> сервер использует значение по умолчанию.</param>
+    /// <param name="startTime">Начало диапазона (Unix мс). При <see langword="null"/> сервер определяет самостоятельно.</param>
+    /// <param name="fields">Список запрашиваемых полей статистики. Рекомендуется передавать явно.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Объект <see cref="GroupStatOverviewDto"/>, или <see langword="null"/>.</returns>
+    Task<GroupStatOverviewDto?> GetStatOverviewAsync(
+        IRequestContext context,
+        GroupStatPeriod? period = null,
+        long? startTime = null,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает демографическую статистику аудитории группы.
+    /// Соответствует методу <c>group.getStatPeople</c>.
+    /// </summary>
+    /// <remarks>Требует прав администратора группы и scope <c>GROUP_CONTENT</c>.</remarks>
+    /// <param name="context">Контекст запроса: только <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="demoType">Тип демографической разбивки (например, <c>gender</c>, <c>age</c>). При <see langword="null"/> возвращаются все типы.</param>
+    /// <param name="fields">Список запрашиваемых полей. Рекомендуется передавать явно.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Объект <see cref="GroupStatPeopleDto"/>, или <see langword="null"/>.</returns>
+    Task<GroupStatPeopleDto?> GetStatPeopleAsync(
+        IRequestContext context,
+        string? demoType = null,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает статистику одного поста (топика) группы.
+    /// Соответствует методу <c>group.getStatTopic</c>.
+    /// </summary>
+    /// <remarks>Требует прав администратора группы и scope <c>GROUP_CONTENT</c>.</remarks>
+    /// <param name="topicId">Идентификатор топика.</param>
+    /// <param name="context">Контекст запроса: только <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="fields">Список запрашиваемых полей статистики.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Объект <see cref="GroupStatTopicDto"/>, или <see langword="null"/>.</returns>
+    Task<GroupStatTopicDto?> GetStatTopicAsync(
+        string topicId,
+        IRequestContext context,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Возвращает навигатор для постраничного перебора статистики постов группы за диапазон дат.
+    /// Соответствует методу <c>group.getStatTopics</c>.
+    /// </summary>
+    /// <remarks>Требует прав администратора группы и scope <c>GROUP_CONTENT</c>.</remarks>
+    /// <param name="startTime">Начало диапазона (Unix мс).</param>
+    /// <param name="endTime">Конец диапазона (Unix мс).</param>
+    /// <param name="context">Контекст запроса: только <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="cfg">Настройки курсорной пагинации.</param>
+    /// <param name="fields">Список запрашиваемых полей статистики.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Навигатор <see cref="AnchorNavigator{GroupStatTopicDto}"/> по статистике постов.</returns>
+    AnchorNavigator<GroupStatTopicDto> GetStatTopicsNavigator(
+        long startTime,
+        long endTime,
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает временны́е ряды (тренды) ключевых показателей группы за диапазон дат.
+    /// Соответствует методу <c>group.getStatTrends</c>.
+    /// </summary>
+    /// <remarks>Требует прав администратора группы и scope <c>GROUP_CONTENT</c>.</remarks>
+    /// <param name="startTime">Начало диапазона (Unix мс).</param>
+    /// <param name="endTime">Конец диапазона (Unix мс).</param>
+    /// <param name="context">Контекст запроса: только <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="fields">Список запрашиваемых показателей (например, <c>views</c>, <c>likes</c>).</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Объект <see cref="GroupStatTrendsDto"/> с временны́ми рядами, или <see langword="null"/>.</returns>
+    Task<GroupStatTrendsDto?> GetStatTrendsAsync(
+        long startTime,
+        long endTime,
+        IRequestContext context,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Закрепляет запись в ленте группы с помощью одноразового токена.
+    /// Соответствует методу <c>group.pinGroupFeed</c>.
+    /// </summary>
+    /// <remarks>
+    /// Параметр <paramref name="pinId"/> — одноразовый токен из поля <c>pin_id</c>,
+    /// который возвращается при запросе топика через <c>mediatopic.getByIds</c>.
+    /// Требует scope <c>GROUP_CONTENT</c>.
+    /// </remarks>
+    /// <param name="pinId">Одноразовый токен закрепления.</param>
+    /// <param name="context">Контекст запроса: <see cref="GroupRequestContext"/> или <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns><see langword="true"/>, если запись успешно закреплена.</returns>
+    Task<bool> PinGroupFeedAsync(
+        string pinId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Устанавливает главное фото группы.
+    /// Соответствует методу <c>group.setMainPhoto</c>.
+    /// </summary>
+    /// <remarks>Требует scope <c>GROUP_CONTENT</c> и <c>PHOTO_CONTENT</c>.</remarks>
+    /// <param name="photoId">Идентификатор фотографии, которую нужно сделать главной.</param>
+    /// <param name="context">Контекст запроса: только <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns><see langword="true"/>, если фото успешно установлено.</returns>
+    Task<bool> SetMainPhotoAsync(
+        string photoId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Проверяет, разрешены ли сообщения от группы текущему пользователю.
+    /// Соответствует методу <c>group.isMessagesAllowed</c>.
+    /// </summary>
+    /// <param name="context">Контекст запроса: <see cref="GroupRequestContext"/> или <see cref="MainGroupRequestContext"/>.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns><see langword="true"/>, если пользователь принимает сообщения от группы.</returns>
+    Task<bool> IsMessagesAllowedAsync(
+        IRequestContext context,
         CancellationToken cancellationToken = default);
 }

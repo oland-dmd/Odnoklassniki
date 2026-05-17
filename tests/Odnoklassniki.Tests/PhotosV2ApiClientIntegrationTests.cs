@@ -1,5 +1,6 @@
 ﻿using Oland.Odnoklassniki.Exceptions;
 using Oland.Odnoklassniki.Image;
+using Oland.Odnoklassniki.Rest.ApiClients.Photos;
 using Oland.Odnoklassniki.Rest.ApiClients.PhotosV2;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 using Oland.Odnoklassniki.Rest.RequestContexts.ValueObjects;
@@ -12,11 +13,13 @@ public class PhotosV2ApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
 {
     private readonly PhotosV2ApiClient _photosV2Client;
     private readonly ImageClient _imageClient;
+    private readonly AlbumsApiClient _albumsClient;
 
     public PhotosV2ApiClientIntegrationTests(OkApiTestFixture fixture)
     {
         _photosV2Client = new PhotosV2ApiClient(fixture.ClientCore);
         _imageClient = new ImageClient();
+        _albumsClient = new AlbumsApiClient(fixture.ClientCore);
     }
 
     #region GetUploadUrlAsync (Получение URL для загрузки)
@@ -24,40 +27,50 @@ public class PhotosV2ApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
     [Fact]
     public async Task GetUploadUrlAsync_WithValidUserAlbum_ShouldReturnValidUploadUrl()
     {
-        // Arrange
-        var albumId = TestSettings.UserAlbumId; // Введите ID пользовательского альбома
+        // Arrange - создаём временный альбом
+        var userContext = new ExplicitTokenRequestContext(TestSettings.AccessPair);
+        var albumId = await _albumsClient.CreateAlbumAsync($"Temp Upload Test {DateTime.UtcNow:yyyyMMddHHmmss}", userContext);
 
-        // Act
-        var result = await _photosV2Client.GetUploadUrlAsync(
-            new ExplicitTokenRequestContext(TestSettings.AccessPair),
-            albumId: albumId,
-            cancellationToken: CancellationToken.None);
+        try
+        {
+            // Act
+            var result = await _photosV2Client.GetUploadUrlAsync(userContext, albumId: albumId, cancellationToken: CancellationToken.None);
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.NotEmpty(result.UploadUrl);
-        Assert.NotNull(result.PhotoIds);
-        Assert.NotEmpty(result.PhotoIds);
-        Assert.Single(result.PhotoIds);
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.UploadUrl);
+            Assert.NotNull(result.PhotoIds);
+            Assert.NotEmpty(result.PhotoIds);
+            Assert.Single(result.PhotoIds);
+        }
+        finally
+        {
+            await _albumsClient.DeleteAlbumAsync(albumId, userContext);
+        }
     }
 
     [Fact]
     public async Task GetUploadUrlAsync_WithValidGroupAlbum_ShouldReturnValidUploadUrl()
     {
-        // Arrange
-        var albumId = TestSettings.GroupAlbumId; // Введите ID группового альбома
+        // Arrange - создаём временный групповой альбом
+        var groupContext = new GroupRequestContext(TestSettings.AccessPair, TestSettings.GroupId);
+        var albumId = await _albumsClient.CreateAlbumAsync($"Temp Group Upload Test {DateTime.UtcNow:yyyyMMddHHmmss}", groupContext);
 
-        // Act
-        var result = await _photosV2Client.GetUploadUrlAsync(
-            new GroupRequestContext(TestSettings.AccessPair, TestSettings.GroupId),
-            albumId: albumId,
-            cancellationToken: CancellationToken.None);
+        try
+        {
+            // Act
+            var result = await _photosV2Client.GetUploadUrlAsync(groupContext, albumId: albumId, cancellationToken: CancellationToken.None);
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.NotEmpty(result.UploadUrl);
-        Assert.NotNull(result.PhotoIds);
-        Assert.NotEmpty(result.PhotoIds);
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.UploadUrl);
+            Assert.NotNull(result.PhotoIds);
+            Assert.NotEmpty(result.PhotoIds);
+        }
+        finally
+        {
+            await _albumsClient.DeleteAlbumAsync(albumId, groupContext);
+        }
     }
 
     [Fact(Skip = "Нереализована возможность множественной загрузки")]

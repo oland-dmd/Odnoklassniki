@@ -1,4 +1,5 @@
-﻿using Oland.Odnoklassniki.Rest.AnchorNavigators;
+﻿using Oland.Odnoklassniki.Common;
+using Oland.Odnoklassniki.Rest.AnchorNavigators;
 using Oland.Odnoklassniki.Rest.ApiClients.Photos.Datas;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 
@@ -107,6 +108,166 @@ public interface IPhotosApiClient
     /// </remarks>
     Task DeletePhotoAsync(
         string photoId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Пакетно получает информацию о фотографиях по списку идентификаторов (<c>photos.getInfo</c>).
+    /// </summary>
+    /// <typeparam name="TDto">Тип DTO, унаследованный от <see cref="BaseOkDto"/>. Определяет набор запрашиваемых полей.</typeparam>
+    /// <param name="photoIds">Список идентификаторов фотографий.</param>
+    /// <param name="context">Контекст запроса с данными аутентификации.</param>
+    /// <param name="fields">Запрашиваемые поля (из <c>PhotoBeanFields</c>). При <c>null</c> сервер возвращает набор по умолчанию.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Коллекция DTO с данными фотографий, или <c>null</c> при пустом ответе.</returns>
+    Task<ICollection<TDto>?> GetPhotosInfoAsync<TDto>(
+        ICollection<string> photoIds,
+        IRequestContext context,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+        where TDto : BaseOkDto;
+
+    /// <summary>
+    /// Возвращает навигатор для перебора всех фотографий текущего пользователя (<c>photos.getUserPhotos</c>).
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ Метод устарел на стороне OK API. Рекомендуется использовать <c>photos.getPhotos</c>.
+    /// Использует пагинацию через <c>pagingAnchor</c>.
+    /// </remarks>
+    /// <typeparam name="TDto">Тип DTO, унаследованный от <see cref="BaseOkDto"/>.</typeparam>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cfg">Настройки пагинации.</param>
+    /// <param name="fields">Запрашиваемые поля.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Навигатор для курсорной итерации по фотографиям пользователя.</returns>
+    AnchorNavigator<TDto> GetUserPhotosNavigator<TDto>(
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+        where TDto : BaseOkDto;
+
+    /// <summary>
+    /// Возвращает навигатор для перебора фотографий из конкретного альбома пользователя (<c>photos.getUserAlbumPhotos</c>).
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ Метод устарел на стороне OK API. Рекомендуется использовать <c>photos.getPhotos</c>.
+    /// Параметр альбома передаётся как <c>aid</c>. Использует пагинацию через <c>pagingAnchor</c>.
+    /// </remarks>
+    /// <typeparam name="TDto">Тип DTO, унаследованный от <see cref="BaseOkDto"/>.</typeparam>
+    /// <param name="albumId">Идентификатор альбома.</param>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cfg">Настройки пагинации.</param>
+    /// <param name="fields">Запрашиваемые поля.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Навигатор для курсорной итерации по фотографиям альбома.</returns>
+    AnchorNavigator<TDto> GetUserAlbumPhotosNavigator<TDto>(
+        string albumId,
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+        where TDto : BaseOkDto;
+
+    /// <summary>
+    /// Ставит лайк («Класс») на фотографию (<c>photos.addPhotoLike</c>).
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ Поддержка метода завершена на стороне OK API. Требует scope <c>LIKE</c> + <c>PHOTO_CONTENT</c> + <c>VALUABLE_ACCESS</c>.
+    /// Нельзя ставить лайк своим фотографиям.
+    /// </remarks>
+    /// <param name="photoId">Идентификатор фотографии.</param>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns><c>true</c> при успешной постановке лайка.</returns>
+    Task<bool> AddPhotoLikeAsync(
+        string photoId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Ставит лайк («Класс») на альбом (<c>photos.addAlbumLike</c>).
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ Поддержка метода завершена на стороне OK API. Требует scope <c>LIKE</c> + <c>PHOTO_CONTENT</c> + <c>VALUABLE_ACCESS</c>.
+    /// Параметр альбома: <c>aid</c>. Нельзя ставить лайк своим альбомам.
+    /// </remarks>
+    /// <param name="albumId">Идентификатор альбома.</param>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns><c>true</c> при успешной постановке лайка.</returns>
+    Task<bool> AddAlbumLikeAsync(
+        string albumId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Возвращает навигатор для перебора пользователей, поставивших лайк на фотографию (<c>photos.getPhotoLikes</c>).
+    /// </summary>
+    /// <param name="photoId">Идентификатор фотографии.</param>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cfg">Настройки пагинации.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Навигатор по пользователям.</returns>
+    AnchorNavigator<UserLikeDto> GetPhotoLikesNavigator(
+        string photoId,
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Возвращает навигатор для перебора пользователей, поставивших лайк на альбом (<c>photos.getAlbumLikes</c>).
+    /// </summary>
+    /// <param name="albumId">Идентификатор альбома.</param>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cfg">Настройки пагинации.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Навигатор по пользователям.</returns>
+    AnchorNavigator<UserLikeDto> GetAlbumLikesNavigator(
+        string albumId,
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает оценки (marks), выставленные текущим пользователем чужим фотографиям (<c>photos.getPhotoMarks</c>).
+    /// </summary>
+    /// <remarks>
+    /// ⚠️ Метод устарел на стороне OK API. Возвращает все оценки текущего пользователя — параметр <c>photo_id</c> отсутствует.
+    /// </remarks>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Коллекция оценок или <c>null</c> при пустом ответе.</returns>
+    Task<ICollection<PhotoMarkDto>?> GetPhotoMarksAsync(
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает теги пользователей на фотографии (<c>photos.getTags</c>).
+    /// </summary>
+    /// <param name="photoId">Идентификатор фотографии.</param>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Коллекция тегов или <c>null</c> при пустом ответе.</returns>
+    Task<ICollection<PhotoTagDto>?> GetTagsAsync(
+        string photoId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Удаляет теги пользователей на фотографии (<c>photos.deleteTags</c>).
+    /// </summary>
+    /// <remarks>
+    /// Максимум 10 тегов за один вызов. Фотография должна принадлежать текущему пользователю.
+    /// </remarks>
+    /// <param name="photoId">Идентификатор фотографии текущего пользователя.</param>
+    /// <param name="tagIds">Список идентификаторов тегов для удаления (макс. 10).</param>
+    /// <param name="context">Контекст запроса.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Количество фактически удалённых тегов.</returns>
+    Task<int> DeleteTagsAsync(
+        string photoId,
+        ICollection<string> tagIds,
         IRequestContext context,
         CancellationToken cancellationToken = default);
 }

@@ -34,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Odnoklassniki.ApiClient\Oland.Odnoklassniki.csproj" />
     <ProjectReference Include="..\..\src\Oland.MediaManager\Oland.MediaManager.Application\Oland.MediaManager.Application.csproj" />
     <ProjectReference Include="..\..\src\Oland.Odnoklassniki\Oland.Odnoklassniki.csproj" />
   </ItemGroup>

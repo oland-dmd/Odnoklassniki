@@ -1,6 +1,8 @@
 ﻿using Oland.Odnoklassniki.Exceptions;
+using Oland.Odnoklassniki.Image;
 using Oland.Odnoklassniki.Rest.AnchorNavigators;
 using Oland.Odnoklassniki.Rest.ApiClients.Photos;
+using Oland.Odnoklassniki.Rest.ApiClients.PhotosV2;
 using Oland.Odnoklassniki.Rest.RequestContexts;
 
 namespace Oland.Odnoklassniki.IntegrationTests;
@@ -13,6 +15,8 @@ using System.Threading.Tasks;
 public class AlbumsApiClientExtensionsIntegrationTests(OkApiTestFixture fixture) : IClassFixture<OkApiTestFixture>
 {
     private readonly AlbumsApiClient _albumsClient = new(fixture.ClientCore);
+    private readonly PhotosV2ApiClient _photosV2Client = new(fixture.ClientCore);
+    private readonly ImageClient _imageClient = new();
 
     #region Get Albums (Получение списков альбомов)
 
@@ -79,34 +83,46 @@ public class AlbumsApiClientExtensionsIntegrationTests(OkApiTestFixture fixture)
     [Fact]
     public async Task GetUserAlbumInfoAsync_WithValidAlbumId_ShouldReturnValidAlbumData()
     {
-        // Arrange
-        var albumId = TestSettings.UserAlbumId;
+        // Arrange - создаём временный альбом
+        var userContext = new ExplicitTokenRequestContext(TestSettings.AccessPair);
+        var albumId = await _albumsClient.CreateAlbumAsync($"Temp Info Album {DateTime.UtcNow:yyyyMMddHHmmss}", userContext);
 
-        // Act
-        var result = await _albumsClient.GetAlbumInfoAsync(
-            albumId: albumId,
-            new ExplicitTokenRequestContext(TestSettings.AccessPair));
+        try
+        {
+            // Act
+            var result = await _albumsClient.GetAlbumInfoAsync(albumId: albumId, userContext);
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(albumId, result.Id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(albumId, result.Id);
+        }
+        finally
+        {
+            await _albumsClient.DeleteAlbumAsync(albumId, userContext);
+        }
     }
 
     [Fact]
     public async Task GetGroupAlbumInfoAsync_WithValidAlbumId_ShouldReturnValidAlbumData()
     {
-        // Arrange
+        // Arrange - создаём временный групповой альбом
         var groupId = TestSettings.GroupId;
-        var albumId = TestSettings.GroupAlbumId;
+        var groupContext = new GroupRequestContext(TestSettings.AccessPair, groupId);
+        var albumId = await _albumsClient.CreateAlbumAsync($"Temp Group Info Album {DateTime.UtcNow:yyyyMMddHHmmss}", groupContext);
 
-        // Act
-        var result = await _albumsClient.GetAlbumInfoAsync(
-            albumId: albumId,
-            new GroupRequestContext(TestSettings.AccessPair, groupId));
+        try
+        {
+            // Act
+            var result = await _albumsClient.GetAlbumInfoAsync(albumId: albumId, groupContext);
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(albumId, result.Id);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(albumId, result.Id);
+        }
+        finally
+        {
+            await _albumsClient.DeleteAlbumAsync(albumId, groupContext);
+        }
     }
 
     [Fact]
@@ -279,42 +295,58 @@ public class AlbumsApiClientExtensionsIntegrationTests(OkApiTestFixture fixture)
     [Fact]
     public async Task SetUserAlbumMainPhotoAsync_WithValidPhotoId_ShouldSetMainPhotoSuccessfully()
     {
-        // Arrange
-        var albumId = TestSettings.UserAlbumId;
-        var photoId = TestSettings.UserAlbumPhotoId;
+        // Arrange - создаём временный альбом и загружаем в него фото
+        var userContext = new ExplicitTokenRequestContext(TestSettings.AccessPair);
+        var albumId = await _albumsClient.CreateAlbumAsync($"Temp Main Photo Album {DateTime.UtcNow:yyyyMMddHHmmss}", userContext);
 
-        // Act
-        await _albumsClient.SetAlbumMainPhotoAsync(
-            albumId: albumId,
-            photoId: photoId,
-            new ExplicitTokenRequestContext(TestSettings.AccessPair));
+        try
+        {
+            var uploadData = await _photosV2Client.GetUploadUrlAsync(userContext, albumId: albumId);
+            await using var file = File.Open("./test.png", FileMode.Open);
+            var uploadToken = await _imageClient.UploadImageAsync(uploadData.UploadUrl, file, CancellationToken.None);
+            var committed = await _photosV2Client.CommitAsync("", uploadToken.Keys.First(), uploadToken.Values.First(), userContext, CancellationToken.None);
+            var photoId = committed.First().Id!;
 
-        // Assert
-        var albumInfo = await _albumsClient.GetAlbumInfoAsync(albumId, new ExplicitTokenRequestContext(TestSettings.AccessPair));
-        
-        Assert.NotNull(albumInfo);
-        // Проверка, что фото установилось (если поле доступно в модели)
-        // Assert.Equal(photoId, albumInfo.MainPhotoId); 
+            // Act
+            await _albumsClient.SetAlbumMainPhotoAsync(albumId: albumId, photoId: photoId, userContext);
+
+            // Assert
+            var albumInfo = await _albumsClient.GetAlbumInfoAsync(albumId, userContext);
+            Assert.NotNull(albumInfo);
+        }
+        finally
+        {
+            await _albumsClient.DeleteAlbumAsync(albumId, userContext);
+        }
     }
 
     [Fact]
     public async Task SetGroupAlbumMainPhotoAsync_WithValidPhotoId_ShouldSetMainPhotoSuccessfully()
     {
-        // Arrange
-        var albumId = TestSettings.GroupAlbumId;
-        var photoId = TestSettings.GroupPhotoAlbumId;
-        var groupId = TestSettings.GroupId;
+        // Arrange - создаём временный групповой альбом и загружаем в него фото
+        var groupContext = new GroupRequestContext(TestSettings.AccessPair, TestSettings.GroupId);
+        var userContext = new ExplicitTokenRequestContext(TestSettings.AccessPair);
+        var albumId = await _albumsClient.CreateAlbumAsync($"Temp Group Main Photo Album {DateTime.UtcNow:yyyyMMddHHmmss}", groupContext);
 
-        // Act
-        await _albumsClient.SetAlbumMainPhotoAsync(
-            albumId: albumId,
-            photoId: photoId,
-            new GroupRequestContext(TestSettings.AccessPair, groupId));
+        try
+        {
+            var uploadData = await _photosV2Client.GetUploadUrlAsync(groupContext, albumId: albumId);
+            await using var file = File.Open("./test.png", FileMode.Open);
+            var uploadToken = await _imageClient.UploadImageAsync(uploadData.UploadUrl, file, CancellationToken.None);
+            var committed = await _photosV2Client.CommitAsync("", uploadToken.Keys.First(), uploadToken.Values.First(), userContext, CancellationToken.None);
+            var photoId = committed.First().Id!;
 
-        // Assert
-        var albumInfo = await _albumsClient.GetAlbumInfoAsync(albumId, new GroupRequestContext(TestSettings.AccessPair, groupId));
-        
-        Assert.NotNull(albumInfo);
+            // Act
+            await _albumsClient.SetAlbumMainPhotoAsync(albumId: albumId, photoId: photoId, groupContext);
+
+            // Assert
+            var albumInfo = await _albumsClient.GetAlbumInfoAsync(albumId, groupContext);
+            Assert.NotNull(albumInfo);
+        }
+        finally
+        {
+            await _albumsClient.DeleteAlbumAsync(albumId, groupContext);
+        }
     }
 
     #endregion

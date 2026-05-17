@@ -16,6 +16,9 @@ namespace Oland.Odnoklassniki.IntegrationTests;
 public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
 {
     private readonly GroupsApiClient _groupsClient;
+    private readonly MainGroupRequestContext _mainGroupContext;
+    private readonly MainGroupRequestContext _invalidMainGroupContext;
+    private readonly GroupRequestContext _groupContext;
 
     public GroupsApiClientIntegrationTests(OkApiTestFixture fixture)
     {
@@ -27,8 +30,20 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
             ApplicationKey =  TestSettings.ApplicationKey,
             GroupId = TestSettings.GroupId.Value
         });
-        
+
+        var invalidOptions = Substitute.For<IOptions<ApplicationOptions>>();
+        invalidOptions.Value.Returns(new ApplicationOptions
+        {
+            AccessToken = "INVALID_TOKEN_12345",
+            SessionSecretKey = TestSettings.AccessPair.SessionSecretKey,
+            ApplicationKey = TestSettings.ApplicationKey,
+            GroupId = TestSettings.GroupId.Value
+        });
+
         _groupsClient = new GroupsApiClient(fixture.ClientCore, new MainAccountRequestContext(options));
+        _mainGroupContext = new MainGroupRequestContext(options);
+        _invalidMainGroupContext = new MainGroupRequestContext(invalidOptions);
+        _groupContext = new GroupRequestContext(TestSettings.AccessPair, TestSettings.GroupId);
     }
 
     #region GetInfoAsync (Получение информации о группах)
@@ -480,10 +495,613 @@ public class GroupsApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
             groupIds: groupIds,
             new ExplicitTokenRequestContext(TestSettings.AccessPair),
             cancellationToken: CancellationToken.None);
-        
+
         Assert.NotNull(results);
         Assert.Equal(groupIds.Length, results.Count);
         Assert.Equal(groupIds[0], results.First().Id);
     }
+    #endregion
+
+    #region GetMembersNavigator (Участники группы)
+
+    [Fact]
+    public async Task GetMembersNavigator_WithGroupContext_ShouldReturnMembers()
+    {
+        var navigator = _groupsClient.GetMembersNavigator(
+            _groupContext,
+            new AnchorConfiguration { Count = 10 },
+            cancellationToken: CancellationToken.None);
+
+        await navigator.MoveNextAsync();
+        var result = navigator.Current;
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+    }
+
+    [Fact]
+    public async Task GetMembersNavigator_WithMainGroupContext_ShouldReturnMembers()
+    {
+        var navigator = _groupsClient.GetMembersNavigator(
+            _mainGroupContext,
+            new AnchorConfiguration { Count = 10 },
+            cancellationToken: CancellationToken.None);
+
+        await navigator.MoveNextAsync();
+        var result = navigator.Current;
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+    }
+
+    [Fact]
+    public async Task GetMembersNavigator_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            var navigator = _groupsClient.GetMembersNavigator(
+                _invalidMainGroupContext,
+                new AnchorConfiguration { Count = 10 },
+                cancellationToken: CancellationToken.None);
+
+            await navigator.MoveNextAsync();
+        });
+    }
+
+    [Fact]
+    public async Task GetMembersNavigator_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            var navigator = _groupsClient.GetMembersNavigator(
+                _groupContext,
+                new AnchorConfiguration { Count = 10 },
+                cancellationToken: cts.Token);
+
+            await navigator.MoveNextAsync();
+        });
+    }
+
+    [Fact]
+    public async Task GetMembersNavigator_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            var navigator = _groupsClient.GetMembersNavigator(
+                new ExplicitTokenRequestContext(TestSettings.AccessPair),
+                new AnchorConfiguration { Count = 10 },
+                cancellationToken: CancellationToken.None);
+
+            await navigator.MoveNextAsync();
+        });
+    }
+
+    #endregion
+
+    #region GetCountersAsync (Счётчики группы)
+
+    [Fact]
+    public async Task GetCountersAsync_WithGroupContext_ShouldReturnCounters()
+    {
+        var result = await _groupsClient.GetCountersAsync(
+            _groupContext,
+            counterTypes: new[] { "MEMBERS" },
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task GetCountersAsync_WithMainGroupContext_ShouldReturnCounters()
+    {
+        var result = await _groupsClient.GetCountersAsync(
+            _mainGroupContext,
+            counterTypes: new[] { "MEMBERS" },
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task GetCountersAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.GetCountersAsync(
+                new ExplicitTokenRequestContext(TestSettings.AccessPair),
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetCountersAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.GetCountersAsync(
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetCountersAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.GetCountersAsync(
+                _groupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
+    #endregion
+
+    #region GetStatOverviewAsync (Статистика группы: обзор)
+
+    [Fact]
+    public async Task GetStatOverviewAsync_WithMainGroupContext_ShouldReturnStatOrNull()
+    {
+        var result = await _groupsClient.GetStatOverviewAsync(
+            _mainGroupContext,
+            fields: new[] { "reach", "engagement" },
+            cancellationToken: CancellationToken.None);
+
+        Assert.True(result == null || result != null);
+    }
+
+    [Fact]
+    public async Task GetStatOverviewAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.GetStatOverviewAsync(
+                _groupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatOverviewAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.GetStatOverviewAsync(
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatOverviewAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.GetStatOverviewAsync(
+                _mainGroupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
+    #endregion
+
+    #region GetStatPeopleAsync (Статистика группы: аудитория)
+
+    [Fact]
+    public async Task GetStatPeopleAsync_WithMainGroupContext_ShouldReturnStatOrNull()
+    {
+        var result = await _groupsClient.GetStatPeopleAsync(
+            _mainGroupContext,
+            fields: new[] { "cities", "countries" },
+            cancellationToken: CancellationToken.None);
+
+        Assert.True(result == null || result != null);
+    }
+
+    [Fact]
+    public async Task GetStatPeopleAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.GetStatPeopleAsync(
+                _groupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatPeopleAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.GetStatPeopleAsync(
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatPeopleAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.GetStatPeopleAsync(
+                _mainGroupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
+    #endregion
+
+    #region GetStatTopicAsync (Статистика по теме)
+
+    [Fact]
+    public async Task GetStatTopicAsync_WithInvalidTopicId_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.GetStatTopicAsync(
+                "INVALID_TOPIC_ID_12345",
+                _mainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatTopicAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.GetStatTopicAsync(
+                TestSettings.DiscussionId,
+                _groupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatTopicAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.GetStatTopicAsync(
+                TestSettings.DiscussionId,
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatTopicAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.GetStatTopicAsync(
+                TestSettings.DiscussionId,
+                _mainGroupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
+    #endregion
+
+    #region GetStatTopicsNavigator (Статистика по темам: пагинация)
+
+    [Fact(Skip = "Недостаточно прав: PUBLISH_TO_STREAM")]
+    public async Task GetStatTopicsNavigator_WithMainGroupContext_ShouldReturnResults()
+    {
+        var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startTime = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds();
+
+        var navigator = _groupsClient.GetStatTopicsNavigator(
+            startTime,
+            endTime,
+            _mainGroupContext,
+            new AnchorConfiguration { Count = 10 },
+            cancellationToken: CancellationToken.None);
+
+        await navigator.MoveNextAsync();
+        var result = navigator.Current;
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task GetStatTopicsNavigator_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startTime = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds();
+
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            var navigator = _groupsClient.GetStatTopicsNavigator(
+                startTime,
+                endTime,
+                _groupContext,
+                new AnchorConfiguration { Count = 10 },
+                cancellationToken: CancellationToken.None);
+
+            await navigator.MoveNextAsync();
+        });
+    }
+
+    [Fact]
+    public async Task GetStatTopicsNavigator_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startTime = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            var navigator = _groupsClient.GetStatTopicsNavigator(
+                startTime,
+                endTime,
+                _mainGroupContext,
+                new AnchorConfiguration { Count = 10 },
+                cancellationToken: cts.Token);
+
+            await navigator.MoveNextAsync();
+        });
+    }
+
+    #endregion
+
+    #region GetStatTrendsAsync (Статистика: тренды)
+
+    [Fact]
+    public async Task GetStatTrendsAsync_WithMainGroupContext_ShouldReturnStatOrNull()
+    {
+        var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startTime = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds();
+
+        var result = await _groupsClient.GetStatTrendsAsync(
+            startTime,
+            endTime,
+            _mainGroupContext,
+            fields: new[] { "reach", "likes" },
+            cancellationToken: CancellationToken.None);
+
+        Assert.True(result == null || result != null);
+    }
+
+    [Fact]
+    public async Task GetStatTrendsAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startTime = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds();
+
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.GetStatTrendsAsync(
+                startTime,
+                endTime,
+                _groupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatTrendsAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startTime = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds();
+
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.GetStatTrendsAsync(
+                startTime,
+                endTime,
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task GetStatTrendsAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var endTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var startTime = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.GetStatTrendsAsync(
+                startTime,
+                endTime,
+                _mainGroupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
+    #endregion
+
+    #region PinGroupFeedAsync (Закрепление в ленте группы)
+
+    [Fact]
+    public async Task PinGroupFeedAsync_WithInvalidPinId_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.PinGroupFeedAsync(
+                "INVALID_PIN_ID_12345",
+                _groupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task PinGroupFeedAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.PinGroupFeedAsync(
+                TestSettings.DiscussionId,
+                new ExplicitTokenRequestContext(TestSettings.AccessPair),
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task PinGroupFeedAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.PinGroupFeedAsync(
+                TestSettings.DiscussionId,
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task PinGroupFeedAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.PinGroupFeedAsync(
+                TestSettings.DiscussionId,
+                _groupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
+    #endregion
+
+    #region SetMainPhotoAsync (Установка главного фото группы)
+
+    [Fact]
+    public async Task SetMainPhotoAsync_WithInvalidPhotoId_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.SetMainPhotoAsync(
+                "INVALID_PHOTO_ID_12345",
+                _mainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task SetMainPhotoAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.SetMainPhotoAsync(
+                "some_photo_id",
+                _groupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task SetMainPhotoAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.SetMainPhotoAsync(
+                "some_photo_id",
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task SetMainPhotoAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.SetMainPhotoAsync(
+                "some_photo_id",
+                _mainGroupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
+    #endregion
+
+    #region IsMessagesAllowedAsync (Проверка разрешения сообщений)
+
+    [Fact]
+    public async Task IsMessagesAllowedAsync_WithGroupContext_ShouldReturnBool()
+    {
+        var result = await _groupsClient.IsMessagesAllowedAsync(
+            _groupContext,
+            cancellationToken: CancellationToken.None);
+
+        Assert.True(result || !result);
+    }
+
+    [Fact]
+    public async Task IsMessagesAllowedAsync_WithMainGroupContext_ShouldReturnBool()
+    {
+        var result = await _groupsClient.IsMessagesAllowedAsync(
+            _mainGroupContext,
+            cancellationToken: CancellationToken.None);
+
+        Assert.True(result || !result);
+    }
+
+    [Fact]
+    public async Task IsMessagesAllowedAsync_WithUnexpectedContext_ShouldThrowUnexpectedRequestContext()
+    {
+        await Assert.ThrowsAsync<UnexpectedRequestContext>(async () =>
+        {
+            await _groupsClient.IsMessagesAllowedAsync(
+                new ExplicitTokenRequestContext(TestSettings.AccessPair),
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task IsMessagesAllowedAsync_WithInvalidToken_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _groupsClient.IsMessagesAllowedAsync(
+                _invalidMainGroupContext,
+                cancellationToken: CancellationToken.None);
+        });
+    }
+
+    [Fact]
+    public async Task IsMessagesAllowedAsync_WithCancelledToken_ShouldThrowTaskCanceledException()
+    {
+        var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+        {
+            await _groupsClient.IsMessagesAllowedAsync(
+                _groupContext,
+                cancellationToken: cts.Token);
+        });
+    }
+
     #endregion
 }

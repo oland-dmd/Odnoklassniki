@@ -88,6 +88,304 @@ public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext m
             anchorConfiguration);
     }
 
+    private const string GetMembersMethodName = $"{OkClassName}.getMembers";
+
+    /// <inheritdoc />
+    public AnchorNavigator<GroupMemberDto> GetMembersNavigator(
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        GroupMemberStatusFilter? statusFilter = null,
+        CancellationToken cancellationToken = default)
+    {
+        return new AnchorNavigator<GroupMemberDto>(
+            nextCfg => GetMembersCoreAsync(context, nextCfg, statusFilter, cancellationToken),
+            cfg);
+    }
+
+    private async Task<AnchorResponse<GroupMemberDto>> GetMembersCoreAsync(
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        GroupMemberStatusFilter? statusFilter,
+        CancellationToken cancellationToken)
+    {
+        // API использует uid вместо gid для идентификатора группы в этом методе
+        var groupId = context switch
+        {
+            GroupRequestContext g => g.GroupId.Value,
+            MainGroupRequestContext mg => mg.GroupId.Value,
+            _ => throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainGroupRequestContext))
+        };
+
+        var parameters = new RestParameters()
+            .InsertUserId(groupId)
+            .InsertAnchor(cfg.Anchor)
+            .InsertCount(cfg.Count)
+            .InsertDirection(cfg.Direction);
+
+        if (statusFilter.HasValue)
+            parameters = parameters.InsertStatuses([statusFilter.Value.ToString()]);
+
+        var response = await okApi.CallAsync<GroupMembersResponse>(
+            GetMembersMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+
+        return new AnchorResponse<GroupMemberDto>
+        {
+            Anchor = response?.Anchor ?? string.Empty,
+            HasMore = response?.HasMore ?? false,
+            TotalCount = response?.TotalCount ?? 0,
+            Results = response?.Members?.ToArray() ?? []
+        };
+    }
+
+    private const string GetCountersMethodName = $"{OkClassName}.getCounters";
+
+    /// <inheritdoc />
+    public async Task<GroupCountersDto?> GetCountersAsync(
+        IRequestContext context,
+        IEnumerable<string>? counterTypes = null,
+        CancellationToken cancellationToken = default)
+    {
+        var groupId = context switch
+        {
+            GroupRequestContext g => g.GroupId.Value,
+            MainGroupRequestContext mg => mg.GroupId.Value,
+            _ => throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainGroupRequestContext))
+        };
+
+        var parameters = new RestParameters()
+            .InsertRootGroupId(groupId);
+
+        if (counterTypes != null)
+            parameters = parameters.InsertCounterTypes(counterTypes);
+
+        var response = await okApi.CallAsync<GroupCountersResponse>(
+            GetCountersMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+
+        return response?.Counters;
+    }
+
+    private const string GetStatOverviewMethodName = $"{OkClassName}.getStatOverview";
+
+    /// <inheritdoc />
+    public async Task<GroupStatOverviewDto?> GetStatOverviewAsync(
+        IRequestContext context,
+        GroupStatPeriod? period = null,
+        long? startTime = null,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (context is not MainGroupRequestContext mgrc)
+            throw new UnexpectedRequestContext(context, nameof(MainGroupRequestContext));
+
+        var parameters = new RestParameters()
+            .InsertGroupId(mgrc.GroupId.Value)
+            .InsertFields(fields?.ToList());
+
+        if (period.HasValue)
+            parameters = parameters.InsertCustomParameter("period", period.Value.ToString());
+
+        if (startTime.HasValue)
+            parameters = parameters.InsertStartTime(startTime.Value);
+
+        parameters = context.Apply(parameters);
+
+        return await okApi.CallAsync<GroupStatOverviewDto>(
+            GetStatOverviewMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+    }
+
+    private const string GetStatPeopleMethodName = $"{OkClassName}.getStatPeople";
+
+    /// <inheritdoc />
+    public async Task<GroupStatPeopleDto?> GetStatPeopleAsync(
+        IRequestContext context,
+        string? demoType = null,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (context is not MainGroupRequestContext mgrc)
+            throw new UnexpectedRequestContext(context, nameof(MainGroupRequestContext));
+
+        var parameters = new RestParameters()
+            .InsertGroupId(mgrc.GroupId.Value)
+            .InsertFields(fields?.ToList());
+
+        if (!string.IsNullOrEmpty(demoType))
+            parameters = parameters.InsertCustomParameter("demo_type", demoType);
+
+        parameters = context.Apply(parameters);
+
+        return await okApi.CallAsync<GroupStatPeopleDto>(
+            GetStatPeopleMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+    }
+
+    private const string GetStatTopicMethodName = $"{OkClassName}.getStatTopic";
+
+    /// <inheritdoc />
+    public async Task<GroupStatTopicDto?> GetStatTopicAsync(
+        string topicId,
+        IRequestContext context,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (context is not MainGroupRequestContext)
+            throw new UnexpectedRequestContext(context, nameof(MainGroupRequestContext));
+
+        var parameters = new RestParameters()
+            .InsertTopicId(topicId)
+            .InsertFields(fields?.ToList());
+
+        parameters = context.Apply(parameters);
+
+        var response = await okApi.CallAsync<GroupStatTopicResponse>(
+            GetStatTopicMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+
+        return response?.Topic;
+    }
+
+    private const string GetStatTopicsMethodName = $"{OkClassName}.getStatTopics";
+
+    /// <inheritdoc />
+    public AnchorNavigator<GroupStatTopicDto> GetStatTopicsNavigator(
+        long startTime,
+        long endTime,
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+    {
+        return new AnchorNavigator<GroupStatTopicDto>(
+            nextCfg => GetStatTopicsCoreAsync(startTime, endTime, context, nextCfg, fields, cancellationToken),
+            cfg);
+    }
+
+    private async Task<AnchorResponse<GroupStatTopicDto>> GetStatTopicsCoreAsync(
+        long startTime,
+        long endTime,
+        IRequestContext context,
+        AnchorConfiguration cfg,
+        IEnumerable<string>? fields,
+        CancellationToken cancellationToken)
+    {
+        if (context is not MainGroupRequestContext mgrc)
+            throw new UnexpectedRequestContext(context, nameof(MainGroupRequestContext));
+
+        var parameters = new RestParameters()
+            .InsertGroupId(mgrc.GroupId.Value)
+            .InsertStartTime(startTime)
+            .InsertEndTime(endTime)
+            .InsertAnchor(cfg.Anchor)
+            .InsertCount(cfg.Count)
+            .InsertFields(fields?.ToList());
+
+        parameters = context.Apply(parameters);
+
+        var response = await okApi.CallAsync<GroupStatTopicsResponse>(
+            GetStatTopicsMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+
+        return new AnchorResponse<GroupStatTopicDto>
+        {
+            Anchor = response?.Anchor ?? string.Empty,
+            HasMore = response?.HasMore ?? false,
+            TotalCount = response?.TotalCount ?? 0,
+            Results = response?.Topics?.ToArray() ?? []
+        };
+    }
+
+    private const string GetStatTrendsMethodName = $"{OkClassName}.getStatTrends";
+
+    /// <inheritdoc />
+    public async Task<GroupStatTrendsDto?> GetStatTrendsAsync(
+        long startTime,
+        long endTime,
+        IRequestContext context,
+        IEnumerable<string>? fields = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (context is not MainGroupRequestContext mgrc)
+            throw new UnexpectedRequestContext(context, nameof(MainGroupRequestContext));
+
+        var parameters = new RestParameters()
+            .InsertGroupId(mgrc.GroupId.Value)
+            .InsertStartTime(startTime)
+            .InsertEndTime(endTime)
+            .InsertFields(fields?.ToList());
+
+        parameters = context.Apply(parameters);
+
+        return await okApi.CallAsync<GroupStatTrendsDto>(
+            GetStatTrendsMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+    }
+
+    private const string PinGroupFeedMethodName = $"{OkClassName}.pinGroupFeed";
+
+    /// <inheritdoc />
+    public async Task<bool> PinGroupFeedAsync(
+        string pinId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default)
+    {
+        // API принимает только pin_id, gid не требуется — токен уже идентифицирует группу
+        if (context is not (GroupRequestContext or MainGroupRequestContext))
+            throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainGroupRequestContext));
+
+        var parameters = new RestParameters()
+            .InsertPinId(pinId);
+
+        var response = await okApi.CallAsync<PinGroupFeedResponse>(
+            PinGroupFeedMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+
+        return response?.Success ?? false;
+    }
+
+    private const string SetMainPhotoMethodName = $"{OkClassName}.setMainPhoto";
+
+    /// <inheritdoc />
+    public async Task<bool> SetMainPhotoAsync(
+        string photoId,
+        IRequestContext context,
+        CancellationToken cancellationToken = default)
+    {
+        if (context is not MainGroupRequestContext mgrc)
+            throw new UnexpectedRequestContext(context, nameof(MainGroupRequestContext));
+
+        var parameters = new RestParameters()
+            .InsertRootGroupId(mgrc.GroupId.Value)
+            .InsertPhotoId(photoId);
+
+        parameters = context.Apply(parameters);
+
+        return await okApi.CallAsync<bool>(
+            SetMainPhotoMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+    }
+
+    private const string IsMessagesAllowedMethodName = $"{OkClassName}.isMessagesAllowed";
+
+    /// <inheritdoc />
+    public async Task<bool> IsMessagesAllowedAsync(
+        IRequestContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var parameters = new RestParameters();
+
+        switch (context)
+        {
+            case GroupRequestContext:
+                parameters = context.Apply(parameters);
+                break;
+            case MainGroupRequestContext mg:
+                parameters = parameters.InsertGroupId(mg.GroupId.Value);
+                parameters = context.Apply(parameters);
+                break;
+            default:
+                throw new UnexpectedRequestContext(context, nameof(GroupRequestContext), nameof(MainGroupRequestContext));
+        }
+
+        var response = await okApi.CallAsync<IsMessagesAllowedResponse>(
+            IsMessagesAllowedMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+
+        return response?.Allowed ?? false;
+    }
+
     private const string GetUserGroupsV2MethodName = $"{OkClassName}.getUserGroupsV2";
 
     private async Task<AnchorResponse<UserGroupDto>> GetUserGroupsV2CoreAsync(
