@@ -5,11 +5,11 @@
     <Nullable>enable</Nullable>
     <PackageId>Oland.Odnoklassniki</PackageId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.1.0</Version>
+    <Version>1.1.2</Version>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <Product>Oland.Odnoklassniki</Product>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>Oland.Odnoklassniki</RootNamespace>
     <LangVersion>14</LangVersion>
     <TargetFrameworks>net10.0;net9.0</TargetFrameworks>

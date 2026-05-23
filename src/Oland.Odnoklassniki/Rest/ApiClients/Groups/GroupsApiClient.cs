@@ -32,7 +32,7 @@ public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext m
         if (groupIds.Count == 0)
             return [];
         
-        fields ??= [GroupBeanFields.Name, GroupBeanFields.Uid, GroupBeanFields.AddPhotoAlbumAllowed];
+        fields ??= [GroupBeanFields.Name, GroupBeanFields.Uid, GroupBeanFields.AddPhotoAlbumAllowed, GroupBeanFields.AddThemeAllowed];
 
         var parameters = new RestParameters()
             .InsertGroups(groupIds)

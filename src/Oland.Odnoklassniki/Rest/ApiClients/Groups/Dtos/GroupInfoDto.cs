@@ -43,4 +43,15 @@ public record GroupInfoDto : BaseOkDto
     /// Не является справочным полем — зависит от контекста запроса и прав доступа токена.
     /// </remarks>
     public bool AddAlbumAllowed => Attributes?.Flags.Contains("ap") ?? false;
+
+    /// <summary>
+    /// Флаг, определяющий возможность публикации постов на стене группы текущим пользователем.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> — операция разрешена; <c>false</c> — операция запрещена.
+    /// </value>
+    /// <remarks>
+    /// Значение вычисляется на стороне сервера по флагу <c>"at"</c> в поле <c>attrs</c>.
+    /// </remarks>
+    public bool AddWallPostAllowed => Attributes?.Flags.Contains("at") ?? false;
 }
