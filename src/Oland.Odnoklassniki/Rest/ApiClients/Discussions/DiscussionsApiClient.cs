@@ -62,7 +62,9 @@ public class DiscussionsApiClient(IOkApiClientCore okApi, ILogger<DiscussionsApi
         var response = await okApi.CallAsync<CommentResponse>(
             GetCommentsMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
-        return response.Comments.Select(item => new CommentData
+        // OK может вернуть ответ без поля "comments" (обсуждение без новых комментариев / уже прочитаны) —
+        // тогда Comments == null. Защищаемся, возвращая пустую коллекцию вместо NRE.
+        return (response?.Comments ?? []).Select(item => new CommentData
         {
             AuthorId = item.AuthorId,
             Timestamp = item.Timestamp,
