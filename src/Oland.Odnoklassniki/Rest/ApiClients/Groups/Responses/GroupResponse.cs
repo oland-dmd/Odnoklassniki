@@ -56,4 +56,16 @@ internal record GroupResponse
     /// </value>
     [JsonPropertyName("userId")]
     public string UserId { get; init; }
+
+    /// <summary>
+    /// Статус (роль) пользователя в группе на момент ответа API.
+    /// </summary>
+    /// <remarks>
+    /// Соответствует полю <c>status</c> в ответе метода <c>group.getUserGroupsV2</c>
+    /// (например, <c>ADMIN</c>, <c>MODERATOR</c>, <c>ACTIVE</c>).
+    /// Может отсутствовать в ответе — тогда значение равно <see langword="null"/>.
+    /// Маппится в <see cref="Dtos.GroupStatus"/> при конвертации в <see cref="Dtos.UserGroupDto"/>.
+    /// </remarks>
+    [JsonPropertyName("status")]
+    public string? Status { get; init; }
 }

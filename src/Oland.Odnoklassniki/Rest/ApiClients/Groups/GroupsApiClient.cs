@@ -419,9 +419,19 @@ public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext m
             Results = response.Response?.Select(groupResponse => new UserGroupDto()
             {
                 GroupId = groupResponse.GroupId,
-                UserId = groupResponse.UserId
+                UserId = groupResponse.UserId,
+                Status = ParseGroupStatus(groupResponse.Status)
             }).ToArray(),
             HasMore = response.Response?.Count != 0
         };
     }
+
+    /// <summary>
+    /// Безопасно преобразует строковый статус из ответа API в <see cref="GroupStatus"/>.
+    /// Возвращает <see cref="GroupStatus.UNKNOWN"/>, если значение пустое или не распознано.
+    /// </summary>
+    private static GroupStatus ParseGroupStatus(string? status) =>
+        Enum.TryParse<GroupStatus>(status, ignoreCase: true, out var parsed)
+            ? parsed
+            : GroupStatus.UNKNOWN;
 }

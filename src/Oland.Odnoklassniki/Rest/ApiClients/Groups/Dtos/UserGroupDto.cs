@@ -23,4 +23,15 @@ public record UserGroupDto
     /// Значение соответствует ID пользователя в социальной сети.
     /// </remarks>
     public string UserId { get; init; }
+
+    /// <summary>
+    /// Статус (роль) пользователя в группе: администратор, модератор, активный участник и т.д.
+    /// </summary>
+    /// <remarks>
+    /// Заполняется из поля <c>status</c> ответа метода <c>group.getUserGroupsV2</c>.
+    /// Если статус не передан сервером или не распознан, значение равно <see cref="GroupStatus.UNKNOWN"/>.
+    /// Позволяет получить роль страницы в её группах за один проход, без дополнительного запроса
+    /// <c>group.getUserGroupsByIds</c> от имени основного аккаунта.
+    /// </remarks>
+    public GroupStatus Status { get; init; } = GroupStatus.UNKNOWN;
 }
