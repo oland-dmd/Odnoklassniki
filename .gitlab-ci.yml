@@ -1,0 +1,15 @@
+# FlowersCRM CI — Odnoklassniki. Общий шаблон: репо infrastructure, ci/templates/dotnet.gitlab-ci.yml
+#
+# Особенность: пакет Oland.Odnoklassniki публикуется на ПУБЛИЧНЫЙ nuget.org (НЕ BaGet),
+# bump patch при каждой фазе — это отдельный ручной шаг, здесь НЕ автоматизируется.
+# Docker-образа у репо нет → только build/test.
+include:
+  - project: '<GROUP>/infrastructure'   # ← заменить <GROUP> на реальную группу в GitLab
+    ref: main
+    file: '/ci/templates/dotnet.gitlab-ci.yml'
+
+variables:
+  SOLUTION: "Odnoklassniki.sln"
+
+build_test:
+  extends: .dotnet_build_test
