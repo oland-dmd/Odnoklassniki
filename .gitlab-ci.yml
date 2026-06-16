@@ -4,7 +4,7 @@
 # bump patch при каждой фазе — это отдельный ручной шаг, здесь НЕ автоматизируется.
 # Docker-образа у репо нет → только build/test.
 include:
-  - project: '<GROUP>/infrastructure'   # ← заменить <GROUP> на реальную группу в GitLab
+  - project: 'FlowersCRM/infrastructure'
     ref: main
     file: '/ci/templates/dotnet.gitlab-ci.yml'
 
