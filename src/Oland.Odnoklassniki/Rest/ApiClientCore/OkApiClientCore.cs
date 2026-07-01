@@ -15,11 +15,18 @@ namespace Oland.Odnoklassniki.Rest.ApiClientCore;
 /// </summary>
 public class OkApiClientCore : IOkApiClientCore, IDisposable
 {
-    private readonly HttpClient _httpClient = new() 
+    private readonly HttpClient _httpClient = new()
     {
         BaseAddress = new Uri("https://api.ok.ru/")
     };
     private readonly IOptions<ApplicationOptions> _options;
+
+    /// <summary>
+    /// Порог длины query string, выше которого запрос отправляется POST'ом, а не GET'ом, — чтобы не
+    /// упереться в лимит длины URL у шлюза OK (при большом attachment он отдаёт HTTP 400). Значение с
+    /// запасом ниже типичного лимита строки запроса (~8 КБ), чтобы учесть накладные расходы заголовков.
+    /// </summary>
+    private const int MaxGetQueryLength = 1800;
 
     public OkApiClientCore(IOptions<ApplicationOptions> options)
     {
@@ -55,9 +62,13 @@ public class OkApiClientCore : IOkApiClientCore, IDisposable
 
         var queryString = GenerateQueryString(mergedParams.AsReadOnly());
 
-        var requestUri = $"fb.do?{queryString}";
-
-        using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
+        // Крупные запросы (market.add/edit, mediatopic.post с большим attachment и т.п.) отправляем
+        // POST'ом с телом form-urlencoded. Иначе весь attachment уходит в query string GET-запроса, и при
+        // длинном описании/медиа длина URL превышает лимит шлюза OK — он отвечает голым HTTP 400
+        // (Tomcat "Bad Request"), а не JSON-ошибкой. Короткие запросы оставляем GET'ом без изменений.
+        using var response = queryString.Length > MaxGetQueryLength
+            ? await _httpClient.PostAsync("fb.do", new FormUrlEncodedContent(mergedParams), cancellationToken)
+            : await _httpClient.GetAsync($"fb.do?{queryString}", cancellationToken);
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
