@@ -27,7 +27,9 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
             "group_album.title",
             "group_album.aid",
             "group_album.user_id",
-            "group_album.type",
+            // У группового альбома OK нет поля type (GroupPhotoAlbumBeanFields): запрос group_album.type
+            // роняет photos.getAlbums/getAlbumInfo для групп с PARAM-ошибкой. Видимость сверяем только
+            // для страниц (album.type), поэтому для групп тип и не нужен.
             "group_album.ADD_PHOTO_ALLOWED"
         ];
 
