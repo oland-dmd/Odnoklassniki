@@ -76,7 +76,17 @@ public record AlbumData
     /// Может быть <see langword="null"/>, если альбом не привязан к конкретному пользователю.
     /// </value>
     public string? UserId { get; init; }
-    
+
+    /// <summary>
+    /// Тип (видимость) альбома: <c>PUBLIC</c>, <c>PRIVATE</c>, <c>FRIENDS</c> и т. п.
+    /// </summary>
+    /// <remarks>
+    /// Соответствует полю <c>type</c> в ответе API. Заполняется только если поле было запрошено
+    /// (<c>album.type</c>/<c>group_album.type</c>). <see langword="null"/> — тип не запрошен либо
+    /// не возвращён платформой.
+    /// </remarks>
+    public string? Type { get; init; }
+
     /// <summary>
     /// Флаг, определяющий возможность добавления новых фотографий в альбом текущим пользователем.
     /// </summary>

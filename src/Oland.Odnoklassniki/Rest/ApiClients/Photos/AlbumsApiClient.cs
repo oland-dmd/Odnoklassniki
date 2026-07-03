@@ -17,15 +17,17 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
 {
     private const string OkClassName = "photos";
 
-    private static readonly ICollection<string> DefaultFields = 
+    private static readonly ICollection<string> DefaultFields =
         [
             "album.title",
             "album.aid",
             "album.user_id",
+            "album.type",
             "album.ADD_PHOTO_ALLOWED",
             "group_album.title",
             "group_album.aid",
             "group_album.user_id",
+            "group_album.type",
             "group_album.ADD_PHOTO_ALLOWED"
         ];
 
@@ -147,6 +149,7 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
                 Id = item.Id,
                 Title = item.Title,
                 UserId = item.UserId,
+                Type = item.Type,
                 IsAddPhotoAllowed = item.Attributes?.Flags == "ap"
             }).ToArray(),
             HasMore = response.HasMore,
@@ -164,12 +167,18 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
         string title,
         string description,
         IRequestContext context,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? type = null)
     {
         var parameters = new RestParameters()
             .InsertAlbumId(albumId)
             .InsertTitle(title)
             .InsertDescription(description);
+
+        // Тип (видимость) альбома меняется только если он задан явно: PUBLIC/PRIVATE/FRIENDS и т. п.
+        // OK применяет photos.editAlbum type к альбому целиком; без параметра видимость не трогается.
+        if (!string.IsNullOrWhiteSpace(type))
+            parameters = parameters.InsertCustomParameter("type", type);
 
         switch (context)
         {
@@ -226,7 +235,8 @@ public class AlbumsApiClient(IOkApiClientCore okApi) : IAlbumsApiClient
         {
             Id = response.Album.Id,
             Title = response.Album.Title,
-            UserId = response.Album.UserId
+            UserId = response.Album.UserId,
+            Type = response.Album.Type
         };
     }
 }

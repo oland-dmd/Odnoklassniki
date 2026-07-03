@@ -87,6 +87,17 @@ public record AlbumModel
     public string? UserId { get; init; }
 
     /// <summary>
+    /// Тип (видимость) альбома: <c>PUBLIC</c>, <c>PRIVATE</c>, <c>FRIENDS</c> и т. п.
+    /// </summary>
+    /// <remarks>
+    /// Соответствует полю <c>type</c> в ответе API. Возвращается только если запрошено явно
+    /// в параметре <c>fields</c> (<c>album.type</c>/<c>group_album.type</c>). Может быть
+    /// <see langword="null"/>, если поле не запрошено или не поддержано для данного типа альбома.
+    /// </remarks>
+    [JsonPropertyName("type")]
+    public string? Type { get; init; }
+
+    /// <summary>
     /// Дополнительные атрибуты альбома (флаги, метаданные, настройки).
     /// </summary>
     /// <remarks>

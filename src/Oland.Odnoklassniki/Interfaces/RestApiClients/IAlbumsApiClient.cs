@@ -58,13 +58,17 @@ public interface IAlbumsApiClient
         CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Редактирует метаданные альбома: название и описание.
+    /// Редактирует метаданные альбома: название, описание и (опционально) тип видимости.
     /// </summary>
     /// <param name="albumId">Идентификатор редактируемого альбома.</param>
     /// <param name="title">Новое название альбома.</param>
     /// <param name="description">Новое описание альбома.</param>
     /// <param name="context">Контекст запроса, содержащий данные аутентификации и авторизации. Поддерживает контексты: групповой, основной аккаунт и указанный токен</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <param name="type">
+    /// Тип (видимость) альбома: <c>PUBLIC</c>, <c>PRIVATE</c>, <c>FRIENDS</c> и т. п. Если
+    /// <see langword="null"/> или пусто — видимость альбома не изменяется (правятся только название/описание).
+    /// </param>
     /// <remarks>
     /// Передача пустой строки допустима для поля <c>description</c>. Поле <c>title</c> является обязательным
     /// и должно соответствовать ограничениям платформы по длине и допустимым символам.
@@ -73,7 +77,8 @@ public interface IAlbumsApiClient
         string title,
         string description,
         IRequestContext context,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? type = null);
     
     /// <summary>
     /// Возвращает навигатор для постраничного получения списка альбомов указанного контекста.
