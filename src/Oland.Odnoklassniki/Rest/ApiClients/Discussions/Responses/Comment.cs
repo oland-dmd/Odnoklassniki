@@ -48,9 +48,10 @@ internal record Comment
 
     /// <summary>
     /// Время создания комментария в миллисекундах с Unix-эпохи.
-    /// Соответствует полю <c>"date_ms"</c> в API OK.
+    /// Соответствует полю <c>"created_ms"</c> в API OK (не <c>"date_ms"</c> — такого поля API не возвращает,
+    /// из-за чего это значение молча оставалось нулевым).
     /// </summary>
-    [JsonPropertyName("date_ms")]
+    [JsonPropertyName("created_ms")]
     public long Timestamp { get; init; }
 
     /// <summary>

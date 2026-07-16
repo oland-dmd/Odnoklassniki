@@ -52,7 +52,7 @@ public class DiscussionsApiClient(IOkApiClientCore okApi, ILogger<DiscussionsApi
             .InsertFields(
                 "comment.AUTHOR_ID", "comment.AUTHOR_NAME", "comment.AUTHOR_REF",
                 "comment.REPLY_TO_ID", "comment.REPLY_TO_NAME", "comment.REPLY_TO_COMMENT_ID",
-                "comment.DATE", "comment.ID", "comment.TEXT", "comment.TYPE")
+                "comment.CREATED_MS", "comment.ID", "comment.TEXT", "comment.TYPE")
             .InsertCount(count)
             .InsertCustomParameter("discussionType", discussionType)
             .InsertCustomParameter("discussionId", discussionId)
