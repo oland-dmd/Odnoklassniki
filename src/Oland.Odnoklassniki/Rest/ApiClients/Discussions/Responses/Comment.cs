@@ -48,17 +48,18 @@ internal record Comment
     public string Text { get; init; }
 
     /// <summary>
-    /// Время создания комментария в миллисекундах с Unix-эпохи. Соответствует полю <c>"created_ms"</c>
-    /// в API OK (не <c>"date_ms"</c> — такого поля API не возвращает). Для некоторых типов обсуждений
-    /// (замечено на личных <c>USER_STATUS</c>/<c>USER_PHOTO</c>) OK не отдаёт это поле вовсе (<see langword="null"/>)
-    /// — тогда используется резервный <see cref="Date"/>, см. <see cref="Timestamp"/>.
+    /// Время создания в Unix мс, если API его вернул. <c>discussions.getComments</c> его не отдаёт:
+    /// поля <c>CREATED_MS</c> в <c>CommentBeanFields</c> нет, запросить его нельзя (см. <see cref="Date"/>),
+    /// поэтому здесь практически всегда <see langword="null"/>. Оставлено на случай, если OK начнёт
+    /// отдавать поле в наборе по умолчанию.
     /// </summary>
     [JsonPropertyName("created_ms")]
     public long? CreatedMs { get; init; }
 
     /// <summary>
-    /// Резервное человекочитаемое время создания ("yyyy-MM-dd HH:mm:ss", московское время) — приходит
-    /// вместо <see cref="CreatedMs"/> для обсуждений, где числовое поле не отдаётся API.
+    /// Время создания как его отдаёт <c>discussions.getComments</c> — "yyyy-MM-dd HH:mm:ss" по Москве
+    /// (запрашивается полем <c>comment.DATE</c>). Основной источник времени для этого метода;
+    /// историческая ошибка чтения ключа <c>"date_ms"</c> обнуляла время всех комментариев.
     /// </summary>
     [JsonPropertyName("date")]
     public string? Date { get; init; }
