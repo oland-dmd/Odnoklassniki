@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Oland.Odnoklassniki.Common;
 
 namespace Oland.Odnoklassniki.Rest.ApiClients.Discussions.Responses;
 
@@ -47,12 +48,23 @@ internal record Comment
     public string Text { get; init; }
 
     /// <summary>
-    /// Время создания комментария в миллисекундах с Unix-эпохи.
-    /// Соответствует полю <c>"created_ms"</c> в API OK (не <c>"date_ms"</c> — такого поля API не возвращает,
-    /// из-за чего это значение молча оставалось нулевым).
+    /// Время создания комментария в миллисекундах с Unix-эпохи. Соответствует полю <c>"created_ms"</c>
+    /// в API OK (не <c>"date_ms"</c> — такого поля API не возвращает). Для некоторых типов обсуждений
+    /// (замечено на личных <c>USER_STATUS</c>/<c>USER_PHOTO</c>) OK не отдаёт это поле вовсе (<see langword="null"/>)
+    /// — тогда используется резервный <see cref="Date"/>, см. <see cref="Timestamp"/>.
     /// </summary>
     [JsonPropertyName("created_ms")]
-    public long Timestamp { get; init; }
+    public long? CreatedMs { get; init; }
+
+    /// <summary>
+    /// Резервное человекочитаемое время создания ("yyyy-MM-dd HH:mm:ss", московское время) — приходит
+    /// вместо <see cref="CreatedMs"/> для обсуждений, где числовое поле не отдаётся API.
+    /// </summary>
+    [JsonPropertyName("date")]
+    public string? Date { get; init; }
+
+    /// <summary>Итоговое время создания в Unix мс: <see cref="CreatedMs"/>, а при его отсутствии — разбор <see cref="Date"/>.</summary>
+    public long Timestamp => CreatedMs ?? OkLegacyDateParser.ParseToUnixMs(Date);
 
     /// <summary>
     /// Тип комментария. В большинстве случаев — «text», но может использоваться

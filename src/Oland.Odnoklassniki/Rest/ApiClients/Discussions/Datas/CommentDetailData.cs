@@ -18,9 +18,23 @@ public sealed record CommentDetailData : BaseOkDto
     [JsonPropertyName("author_ref")]
     public string? AuthorRef { get; init; }
 
-    /// <summary>Время создания комментария (Unix мс).</summary>
+    /// <summary>
+    /// Время создания комментария (Unix мс). Для некоторых типов обсуждений (замечено на личных
+    /// <c>USER_STATUS</c>/<c>USER_PHOTO</c>) OK не отдаёт это поле вовсе (<see langword="null"/>) — тогда
+    /// используется резервный <see cref="Date"/>, см. <see cref="TimestampMs"/>.
+    /// </summary>
     [JsonPropertyName("created_ms")]
     public long? CreatedMs { get; init; }
+
+    /// <summary>
+    /// Резервное человекочитаемое время создания ("yyyy-MM-dd HH:mm:ss", московское время) — приходит
+    /// вместо <see cref="CreatedMs"/> для обсуждений, где числовое поле не отдаётся API.
+    /// </summary>
+    [JsonPropertyName("date")]
+    public string? Date { get; init; }
+
+    /// <summary>Итоговое время создания в Unix мс: <see cref="CreatedMs"/>, а при его отсутствии — разбор <see cref="Date"/>.</summary>
+    public long TimestampMs => CreatedMs ?? OkLegacyDateParser.ParseToUnixMs(Date);
 
     /// <summary>Текст комментария.</summary>
     [JsonPropertyName("text")]
