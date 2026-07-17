@@ -14,7 +14,18 @@ public sealed record CommentDetailData : BaseOkDto
     [JsonPropertyName("id")]
     public string? Id { get; init; }
 
-    /// <summary>Ссылка на автора комментария (uid или ref).</summary>
+    /// <summary>
+    /// Идентификатор автора комментария (uid). Приходит от <c>discussions.getDiscussionComments</c>
+    /// в поле <c>author_id</c> — в отличие от <see cref="AuthorRef"/>, который этот метод не заполняет.
+    /// </summary>
+    [JsonPropertyName("author_id")]
+    public string? AuthorId { get; init; }
+
+    /// <summary>
+    /// Ссылка на автора комментария. <c>discussions.getDiscussionComments</c> её НЕ отдаёт (всегда
+    /// <see langword="null"/>) — автор приходит в <see cref="AuthorId"/>. Поле сохранено для методов,
+    /// которые ref всё же возвращают.
+    /// </summary>
     [JsonPropertyName("author_ref")]
     public string? AuthorRef { get; init; }
 
