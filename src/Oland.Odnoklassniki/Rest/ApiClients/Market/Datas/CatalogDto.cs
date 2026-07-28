@@ -16,4 +16,7 @@ public record CatalogDto : BaseOkDto
 
     [JsonPropertyName("name")]
     public string? Title { get; set; }
+
+    [JsonPropertyName("image_url_base")]
+    public string? ImageUrlBase { get; set; }
 }
