@@ -84,10 +84,15 @@ public class MediaCollectionBuilder
     /// <param name="url">
     /// Целевой URL (HTTP/HTTPS). Рекомендуется валидировать формат перед вызовом.
     /// </param>
+    /// <param name="signature">
+    /// Подпись вложения из ответа <c>share.fetchLinkV2</c> (<c>LinkAttachmentData.Signature</c>).
+    /// Обязательна для ссылок на внутренние страницы ok.ru (например, товары маркета).
+    /// </param>
+    /// <param name="mediaIdx">Индекс медиа для превью, из того же ответа <c>share.fetchLinkV2</c>.</param>
     /// <returns>Текущий экземпляр билдера для цепочки вызовов.</returns>
-    public MediaCollectionBuilder AddLink(string url)
+    public MediaCollectionBuilder AddLink(string url, string? signature = null, int? mediaIdx = null)
     {
-        _media.Add(new LinkMedia { Url = url });
+        _media.Add(new LinkMedia { Url = url, Signature = signature, MediaIdx = mediaIdx });
         return this;
     }
 
