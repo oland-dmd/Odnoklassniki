@@ -123,6 +123,27 @@ public interface IMarketProductsApiClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Меняет статус товара через метод <c>market.setStatus</c> — единственный способ реактивировать
+    /// товар, автоматически закрытый OK по истечении срока (<c>AUTO_CLOSED -> ACTIVE</c>).
+    /// </summary>
+    /// <param name="productId">Идентификатор товара.</param>
+    /// <param name="status">
+    /// Целевой статус — значение из <see cref="Rest.ApiClients.Market.Constants.ApiSetProductStatusValue"/>
+    /// (заглавными буквами, не путать с <see cref="Rest.ApiClients.Market.Constants.ApiProductStatus"/>).
+    /// </param>
+    /// <param name="context">Контекст выполнения запроса. `market.setStatus` не требует `gid` —
+    /// принимается любой контекст, из которого можно извлечь <see cref="Rest.RequestContexts.ValueObjects.AccessPair"/>.</param>
+    /// <param name="cancellationToken">Токен отмены асинхронной операции.</param>
+    /// <returns><c>true</c> при успешном изменении статуса, иначе <c>false</c>.</returns>
+    /// <remarks>
+    /// <b>Метод API:</b> <c>market.setStatus</c>
+    /// <br/><b>Важно:</b> НЕ идемпотентен. Установка статуса, совпадающего с текущим, возвращает
+    /// ошибку API (<c>mediaTopic.editAdvert.notFound</c>), а не успех.
+    /// </remarks>
+    Task<bool> SetStatusAsync(string productId, string status, IRequestContext context,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Возвращает навигатор для постраничного получения товаров из конкретного каталога
     /// через метод <c>market.getByCatalog</c> с поддержкой курсорной пагинации.
     /// </summary>

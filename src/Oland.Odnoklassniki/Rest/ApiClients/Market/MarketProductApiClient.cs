@@ -135,6 +135,22 @@ public class MarketProductsApiClient(IOkApiClientCore okApi, IMediaService media
         return response?.Success ?? false;
     }
 
+    private const string SetStatusMethodName = $"{OkClassName}.setStatus";
+
+    /// <inheritdoc />
+    public async Task<bool> SetStatusAsync(string productId, string status, IRequestContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var parameters = new RestParameters()
+            .InsertProductId(productId)
+            .InsertCustomParameter("product_status", status);
+
+        var response = await okApi.CallAsync<CompletionStatusResponse>(
+            SetStatusMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
+
+        return response?.Success ?? false;
+    }
+
     /// <inheritdoc />
     public AnchorNavigator<TDto> GetByCatalogNavigator<TDto>(IRequestContext context,
         AnchorConfiguration anchorConfiguration, IEnumerable<string>? fields = null, CancellationToken cancellationToken = default) where TDto : BaseOkDto

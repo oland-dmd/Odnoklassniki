@@ -424,6 +424,69 @@ public class MarketProductsApiClientIntegrationTests : IClassFixture<OkApiTestFi
 
     #endregion
 
+    #region SetStatusAsync (Изменение статуса продукта)
+
+    [Fact]
+    public async Task SetStatusAsync_ClosedThenActive_ShouldReturnTrueForBothTransitions()
+    {
+        // Arrange: создаём товар (по умолчанию ACTIVE)
+        var product = CreateMinimalValidProduct("SetStatus");
+        var productId = await _productsClient.AddAsync(product, _groupContext, CancellationToken.None);
+        Assert.NotNull(productId);
+
+        try
+        {
+            // Act: ACTIVE -> CLOSED
+            var closedResult = await _productsClient.SetStatusAsync(
+                productId, ApiSetProductStatusValue.Closed, _groupContext, CancellationToken.None);
+            Assert.True(closedResult);
+
+            // Act: CLOSED -> ACTIVE (реактивация)
+            var activeResult = await _productsClient.SetStatusAsync(
+                productId, ApiSetProductStatusValue.Active, _groupContext, CancellationToken.None);
+            Assert.True(activeResult);
+        }
+        finally
+        {
+            await _productsClient.DeleteAsync(productId, _explicitTokenContext, CancellationToken.None);
+        }
+    }
+
+    [Fact]
+    public async Task SetStatusAsync_ActiveOnAlreadyActiveProduct_ShouldThrowOkApiException()
+    {
+        // Подтверждает не-идемпотентность market.setStatus: установка того же статуса — ошибка API,
+        // а не тихий успех. Критично для порядка edit-первым/setStatus-фолбэком в OkMarketProductSyncService.
+        var product = CreateMinimalValidProduct("SetStatusNoop");
+        var productId = await _productsClient.AddAsync(product, _groupContext, CancellationToken.None);
+        Assert.NotNull(productId);
+
+        try
+        {
+            await Assert.ThrowsAsync<OkApiException>(async () =>
+            {
+                await _productsClient.SetStatusAsync(
+                    productId, ApiSetProductStatusValue.Active, _groupContext, CancellationToken.None);
+            });
+        }
+        finally
+        {
+            await _productsClient.DeleteAsync(productId, _explicitTokenContext, CancellationToken.None);
+        }
+    }
+
+    [Fact]
+    public async Task SetStatusAsync_WithInvalidProductId_ShouldThrowOkApiException()
+    {
+        await Assert.ThrowsAsync<OkApiException>(async () =>
+        {
+            await _productsClient.SetStatusAsync(
+                "INVALID_PRODUCT_ID_12345", ApiSetProductStatusValue.Active, _explicitTokenContext, CancellationToken.None);
+        });
+    }
+
+    #endregion
+
     #region PinAsync (Закрепление продукта)
 
     [Fact]
