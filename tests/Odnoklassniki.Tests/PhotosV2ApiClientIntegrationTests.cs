@@ -18,7 +18,7 @@ public class PhotosV2ApiClientIntegrationTests : IClassFixture<OkApiTestFixture>
     public PhotosV2ApiClientIntegrationTests(OkApiTestFixture fixture)
     {
         _photosV2Client = new PhotosV2ApiClient(fixture.ClientCore);
-        _imageClient = new ImageClient();
+        _imageClient = new ImageClient(new HttpClient());
         _albumsClient = new AlbumsApiClient(fixture.ClientCore);
     }
 

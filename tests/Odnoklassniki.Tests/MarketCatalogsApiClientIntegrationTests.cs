@@ -26,7 +26,7 @@ public class MarketCatalogsApiClientIntegrationTests(OkApiTestFixture fixture) :
     private readonly GroupRequestContext _groupContext = new(TestSettings.AccessPair,
         TestSettings.GroupId);
     private readonly PhotosV2ApiClient _photosV2Client = new(fixture.ClientCore);
-    private readonly ImageClient _imageClient = new();
+    private readonly ImageClient _imageClient = new(new HttpClient());
 
     // Создаём валидный контекст для группы с реальными токенами
 

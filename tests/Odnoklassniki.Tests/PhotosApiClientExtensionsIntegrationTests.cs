@@ -30,7 +30,7 @@ public class PhotosApiClientExtensionsIntegrationTests : IClassFixture<OkApiTest
     {
         _photosClient = new PhotosApiClient(fixture.ClientCore);
         _photosV2Client = new PhotosV2ApiClient(fixture.ClientCore);
-        _imageClient = new ImageClient();
+        _imageClient = new ImageClient(new HttpClient());
         _albumsClient = new AlbumsApiClient(fixture.ClientCore);
     }
 

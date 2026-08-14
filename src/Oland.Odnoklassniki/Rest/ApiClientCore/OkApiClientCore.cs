@@ -13,12 +13,9 @@ namespace Oland.Odnoklassniki.Rest.ApiClientCore;
 /// Предоставляет унифицированный способ выполнения подписанных запросов
 /// к методам OK.ru с поддержкой пользовательской и основной сессии.
 /// </summary>
-public class OkApiClientCore : IOkApiClientCore, IDisposable
+public class OkApiClientCore : IOkApiClientCore
 {
-    private readonly HttpClient _httpClient = new()
-    {
-        BaseAddress = new Uri("https://api.ok.ru/")
-    };
+    private readonly HttpClient _httpClient;
     private readonly IOptions<ApplicationOptions> _options;
 
     /// <summary>
@@ -28,8 +25,14 @@ public class OkApiClientCore : IOkApiClientCore, IDisposable
     /// </summary>
     private const int MaxGetQueryLength = 1800;
 
-    public OkApiClientCore(IOptions<ApplicationOptions> options)
+    /// <summary>
+    /// HttpClient приходит через DI (см. ServiceExtensions.AddOkApiClients — AddHttpClient),
+    /// а не создаётся здесь: с AddScoped+new HttpClient() каждый scope плодил новый handler/пул
+    /// соединений — риск socket exhaustion под нагрузкой (#577).
+    /// </summary>
+    public OkApiClientCore(HttpClient httpClient, IOptions<ApplicationOptions> options)
     {
+        _httpClient = httpClient;
         _options = options;
 
         if (!string.IsNullOrWhiteSpace(_options.Value.UserAgent))
@@ -144,10 +147,5 @@ public class OkApiClientCore : IOkApiClientCore, IDisposable
         var hashBytes = MD5.HashData(inputBytes);
 
         return Convert.ToHexString(hashBytes).ToLowerInvariant();
-    }
-
-    public void Dispose()
-    {
-        _httpClient?.Dispose();
     }
 }

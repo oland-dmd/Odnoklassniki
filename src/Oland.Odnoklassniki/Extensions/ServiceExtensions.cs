@@ -79,7 +79,13 @@ public static class ServiceExtensions
     /// </exception>
     public static IServiceCollection AddOkApiClients(this IServiceCollection services)
     {
-        services.AddScoped<IOkApiClientCore, OkApiClientCore>();
+        // AddHttpClient вместо AddScoped+new HttpClient() внутри класса (#577): handler переиспользуется
+        // пулом IHttpClientFactory между экземплярами — раньше каждый scope плодил свой пул соединений,
+        // риск socket exhaustion под нагрузкой.
+        services.AddHttpClient<IOkApiClientCore, OkApiClientCore>(client =>
+            client.BaseAddress = new Uri("https://api.ok.ru/"));
+        services.AddHttpClient<ImageClient>();
+
         services.AddOptions<ApplicationOptions>()
             .BindConfiguration("OkApi");
 
@@ -97,7 +103,6 @@ public static class ServiceExtensions
             .AddScoped<IStreamApiClient, StreamApiClient>()
             .AddScoped<IVideoApiClient, VideoApiClient>()
             .AddScoped<IShareApiClient, ShareApiClient>()
-            .AddScoped<ImageClient>()
             .AddScoped<MainAccountRequestContext>()
             .AddScoped<MainGroupRequestContext>();
 

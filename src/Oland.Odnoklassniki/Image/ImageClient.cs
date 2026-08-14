@@ -12,14 +12,17 @@ namespace Oland.Odnoklassniki.Image;
 /// Используется в сценариях работы с фотоальбомами, аватарами и другими медиа-ресурсами.
 /// Методы класса взаимодействуют напрямую с HTTP-эндпоинтами OK.ru для передачи бинарных данных.
 /// </remarks>
-public class ImageClient
+/// <param name="httpClient">
+/// Приходит через DI (см. ServiceExtensions.AddOkApiClients — AddHttpClient&lt;ImageClient&gt;()),
+/// а не создаётся классом самостоятельно — иначе каждый вызов плодил бы новый handler/пул
+/// соединений (#577).
+/// </param>
+public class ImageClient(HttpClient httpClient)
 {
     /// <summary>
     /// Загружает изображение по указанному URL и возвращает его в виде потока данных.
     /// </summary>
     /// <remarks>
-    /// Метод создаёт новый экземпляр <see cref="HttpClient"/> для каждого запроса.
-    /// Для высоконагруженных сценариев рекомендуется использовать пул клиентов или <see cref="IHttpClientFactory"/>.
     /// Возвращаемый поток должен быть корректно утилизирован вызывающей стороной.
     /// </remarks>
     /// <param name="url">
@@ -39,10 +42,9 @@ public class ImageClient
     /// </exception>
     public async Task<Stream> DownloadAsStreamAsync(string url, CancellationToken cancellationToken)
     {
-        using var httpClient = new HttpClient();
         var responseImage = await httpClient.GetAsync(url, cancellationToken);
         var stream = await responseImage.Content.ReadAsStreamAsync(cancellationToken);
-        
+
         return stream;
     }
 
@@ -58,7 +60,6 @@ public class ImageClient
     /// <list type="bullet">
     /// <item>Перед вызовом метода необходимо получить URL для загрузки через метод API <c>photos.getUploadUrl</c>;</item>
     /// <item>После загрузки токены используются для финализации публикации через <c>photos.commit</c>;</item>
-    /// <item>Метод создаёт новый <see cref="HttpClient"/> для каждого запроса.</item>
     /// </list>
     /// </remarks>
     /// <param name="requestUri">
@@ -98,8 +99,6 @@ public class ImageClient
         using var content = new MultipartFormDataContent();
         content.Add(new StreamContent(stream), $"pic{0}", Guid.NewGuid().ToString());
 
-        using var httpClient = new HttpClient();
-        
         var response = await httpClient.PostAsync(requestUri, content, cancellationToken);
         var str = await response.Content.ReadAsStringAsync(cancellationToken);
         OkApiException.ThrowIfError(str);

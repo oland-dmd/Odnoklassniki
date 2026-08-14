@@ -26,7 +26,7 @@ public class DiscussionApiClientIntegrationTests(OkApiTestFixture fixture) : ICl
     private readonly DiscussionsApiClient _discussionClient = new(fixture.ClientCore, Substitute.For<ILogger<DiscussionsApiClient>>());
     private readonly ExplicitTokenRequestContext _userContext = new(TestSettings.AccessPair);
     private readonly PhotosV2ApiClient _photosV2Client = new(fixture.ClientCore);
-    private readonly ImageClient _imageClient = new();
+    private readonly ImageClient _imageClient = new(new HttpClient());
     private readonly PhotosApiClient _photosClient = new(fixture.ClientCore);
 
     private async Task<string> UploadTestPhotoAsync()

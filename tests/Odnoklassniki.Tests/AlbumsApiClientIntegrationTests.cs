@@ -16,7 +16,7 @@ public class AlbumsApiClientExtensionsIntegrationTests(OkApiTestFixture fixture)
 {
     private readonly AlbumsApiClient _albumsClient = new(fixture.ClientCore);
     private readonly PhotosV2ApiClient _photosV2Client = new(fixture.ClientCore);
-    private readonly ImageClient _imageClient = new();
+    private readonly ImageClient _imageClient = new(new HttpClient());
 
     #region Get Albums (Получение списков альбомов)
 

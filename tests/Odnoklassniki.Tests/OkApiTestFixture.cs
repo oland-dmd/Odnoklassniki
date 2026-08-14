@@ -7,6 +7,8 @@ namespace Oland.Odnoklassniki.IntegrationTests;
 
 public class OkApiTestFixture : IDisposable
 {
+    private readonly HttpClient? _httpClient;
+
     public IOkApiClientCore ClientCore { get; }
 
     public OkApiTestFixture()
@@ -22,12 +24,10 @@ public class OkApiTestFixture : IDisposable
             GroupId = TestSettings.GroupId.Value
         };
 
-        ClientCore = new OkApiClientCore(new OptionsWrapper<ApplicationOptions>(options));
+        // OkApiClientCore больше не создаёт HttpClient сам (#577) — фикстура владеет им и чистит в Dispose.
+        _httpClient = new HttpClient { BaseAddress = new Uri("https://api.ok.ru/") };
+        ClientCore = new OkApiClientCore(_httpClient, new OptionsWrapper<ApplicationOptions>(options));
     }
 
-    public void Dispose()
-    {
-        if (ClientCore is IDisposable disposable)
-            disposable.Dispose();
-    }
+    public void Dispose() => _httpClient?.Dispose();
 }

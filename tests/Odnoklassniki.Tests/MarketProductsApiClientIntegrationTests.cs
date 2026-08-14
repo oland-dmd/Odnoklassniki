@@ -44,7 +44,7 @@ public class MarketProductsApiClientIntegrationTests : IClassFixture<OkApiTestFi
         IMediaService mediaService = new MediaService(new MediaValidator());
         _productsClient = new MarketProductsApiClient(fixture.ClientCore, mediaService);
         _photosV2Client = new PhotosV2ApiClient(fixture.ClientCore);
-        _imageClient = new ImageClient();
+        _imageClient = new ImageClient(new HttpClient());
         
         _groupContext = new GroupRequestContext(TestSettings.AccessPair, TestSettings.GroupId);
         _groupCatalogContext = new GroupCatalogsRequestContext(TestSettings.AccessPair, TestSettings.GroupId, TestSettings.CatalogId);
