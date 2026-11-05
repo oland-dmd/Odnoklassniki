@@ -12,6 +12,14 @@ namespace Oland.Odnoklassniki.Interfaces.RestApiClients;
 public interface IAlbumsApiClient
 {
     /// <summary>
+    /// Reads a group album inventory with explicit end-of-traversal proof.
+    /// Older implementations fail closed rather than treating unsupported reads as empty.
+    /// </summary>
+    Task<GroupAlbumsListing> GetCompleteGroupAlbumsAsync(IRequestContext context,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(new GroupAlbumsListing([], false, "Unsupported"));
+
+    /// <summary>
     /// Устанавливает указанную фотографию в качестве обложки альбома указанного контекста.
     /// </summary>
     /// <param name="albumId">Идентификатор альбома в формате OK.ru.</param>
