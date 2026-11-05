@@ -108,6 +108,21 @@ public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext m
         GroupMemberStatusFilter? statusFilter,
         CancellationToken cancellationToken)
     {
+        var page = await GetMembersPageAsync(context, cfg, statusFilter, cancellationToken);
+        return new AnchorResponse<GroupMemberDto>
+        {
+            Anchor = page.Anchor ?? string.Empty,
+            HasMore = page.HasMore ?? false,
+            TotalCount = page.TotalCount ?? 0,
+            Results = page.Members?.ToArray() ?? []
+        };
+    }
+
+    /// <inheritdoc />
+    public async Task<GroupMembersPage> GetMembersPageAsync(
+        IRequestContext context, AnchorConfiguration cfg, GroupMemberStatusFilter? statusFilter = null,
+        CancellationToken cancellationToken = default)
+    {
         // API использует uid вместо gid для идентификатора группы в этом методе
         var groupId = context switch
         {
@@ -128,13 +143,8 @@ public class GroupsApiClient(IOkApiClientCore okApi, MainAccountRequestContext m
         var response = await okApi.CallAsync<GroupMembersResponse>(
             GetMembersMethodName, context.AccessPair, parameters, cancellationToken: cancellationToken);
 
-        return new AnchorResponse<GroupMemberDto>
-        {
-            Anchor = response?.Anchor ?? string.Empty,
-            HasMore = response?.HasMore ?? false,
-            TotalCount = response?.TotalCount ?? 0,
-            Results = response?.Members?.ToArray() ?? []
-        };
+        return new GroupMembersPage(response?.Members?.ToArray(), response?.Anchor,
+            response?.HasMore, response?.TotalCount) { MembersHidden = response?.MembersHidden };
     }
 
     private const string GetCountersMethodName = $"{OkClassName}.getCounters";

@@ -8,6 +8,8 @@ namespace Oland.Odnoklassniki.Rest.ApiClients.Groups.Responses;
 /// </summary>
 internal sealed record GroupMembersResponse
 {
+    [JsonPropertyName("membersHidden")]
+    public bool? MembersHidden { get; init; }
     /// <summary>Список участников текущей страницы.</summary>
     [JsonPropertyName("members")]
     public ICollection<GroupMemberDto>? Members { get; init; }
@@ -18,9 +20,9 @@ internal sealed record GroupMembersResponse
 
     /// <summary>Признак наличия следующей страницы.</summary>
     [JsonPropertyName("has_more")]
-    public bool HasMore { get; init; }
+    public bool? HasMore { get; init; }
 
     /// <summary>Общее количество участников, соответствующих фильтру.</summary>
     [JsonPropertyName("totalCount")]
-    public int TotalCount { get; init; }
+    public int? TotalCount { get; init; }
 }

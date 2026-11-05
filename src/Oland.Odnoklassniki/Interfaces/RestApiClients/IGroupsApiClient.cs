@@ -17,6 +17,11 @@ namespace Oland.Odnoklassniki.Interfaces.RestApiClients;
 /// </summary>
 public interface IGroupsApiClient
 {
+    /// <summary>Reads one roster page without concealing empty, missing or invalid response metadata.</summary>
+    Task<GroupMembersPage> GetMembersPageAsync(IRequestContext context, AnchorConfiguration cfg,
+        GroupMemberStatusFilter? statusFilter = null, CancellationToken cancellationToken = default)
+        => Task.FromException<GroupMembersPage>(new NotSupportedException("This client does not implement lossless roster pages."));
+
     /// <summary>
     /// Получает информацию о группах по их идентификаторам.
     /// </summary>
